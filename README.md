@@ -7,8 +7,8 @@ A live-updating, animated Sankey diagram built with D3.js and Vite — designed 
 ## Features
 
 - 🔄 Smooth animations between states
-- 📈 Supports real-time or pre-recorded data
-- 🎛️ Play/Pause/Replay controls
+- 📈 Supports pre-recorded data (real-time to be added)
+- 🎛️ Play/Pause/Speed controls
 - 🧠 Auto-generates layout from input nodes and links
 - 💡 No hardcoded structure — works with new or unknown nodes
 
@@ -28,7 +28,7 @@ npm install
 
 ## Development
 
-To start the development server:
+To start the development server (assumes Node v20+):
 
 ```bash
 npm run dev
