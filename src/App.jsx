@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import SankeyDiagram from "./components/SankeyDiagram";
 import ErrorBoundary from "./components/ErrorBoundary";
-import { jsonConnector } from "./data/connectors";
 import "./App.css";
 
 const App = () => {
@@ -14,23 +13,53 @@ const App = () => {
   const [error, setError] = useState(null);
   const speedMenuRef = useRef(null);
 
-  // Load data
-  useEffect(() => {
-    jsonConnector("/data.json")
-      .then((fetchedData) => {
-        console.log("Fetched snapshots:", fetchedData);
-        if (!Array.isArray(fetchedData) || fetchedData.length === 0) {
-          throw new Error(
-            "Invalid data format: expected an array of snapshots"
-          );
+  // Handle file upload
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) {
+      setError("No file selected.");
+      return;
+    }
+
+    const fileName = file.name.toLowerCase();
+    if (!fileName.endsWith(".json")) {
+      setError("Please upload a JSON file.");
+      setSnapshots([]);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const parsedData = JSON.parse(e.target.result);
+        if (!Array.isArray(parsedData) || parsedData.length === 0) {
+          throw new Error("JSON must be an array of snapshots.");
         }
-        setSnapshots(fetchedData);
-      })
-      .catch((err) => {
-        console.error("Error loading data:", err);
-        setError("Failed to load data. Check the console for details.");
-      });
-  }, []);
+        for (const frame of parsedData) {
+          if (!frame.timestamp || !frame.nodes || !frame.links) {
+            throw new Error(
+              "Each frame must have 'timestamp', 'nodes', and 'links' properties."
+            );
+          }
+          if (!Array.isArray(frame.nodes) || !Array.isArray(frame.links)) {
+            throw new Error("'nodes' and 'links' must be arrays.");
+          }
+        }
+        setSnapshots(parsedData);
+        setCurrentIndex(0);
+        setIsPlaying(false);
+        setError(null);
+      } catch (err) {
+        setError("Invalid JSON format: " + err.message);
+        setSnapshots([]);
+      }
+    };
+    reader.onerror = () => {
+      setError("Error reading the file.");
+      setSnapshots([]);
+    };
+    reader.readAsText(file);
+  };
 
   // Playback timer
   useEffect(() => {
@@ -86,13 +115,34 @@ const App = () => {
 
   const currentSnapshot = snapshots[currentIndex] || null;
 
+  // File upload input JSX
+  const fileUploadInput = (
+    <div className="file-upload">
+      <label htmlFor="json-upload">Upload JSON File:</label>
+      <input
+        type="file"
+        id="json-upload"
+        accept=".json"
+        onChange={handleFileUpload}
+      />
+    </div>
+  );
+
   return (
     <div className="App">
       <h1>Flowturi Studio</h1>
       {error ? (
-        <p style={{ color: "red", textAlign: "center" }}>{error}</p>
+        <>
+          {fileUploadInput}
+          <p className="error-message">{error}</p>
+        </>
       ) : snapshots.length === 0 ? (
-        <p style={{ textAlign: "center" }}>Loading...</p>
+        <>
+          {fileUploadInput}
+          <p className="no-data-message">
+            Please upload a JSON file to visualize.
+          </p>
+        </>
       ) : (
         <>
           <div className="playback-controls">
@@ -171,6 +221,7 @@ const App = () => {
           <ErrorBoundary>
             <SankeyDiagram data={currentSnapshot} />
           </ErrorBoundary>
+          {fileUploadInput} {/* File uploader moved below Sankey */}
         </>
       )}
     </div>
