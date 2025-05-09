@@ -2,7 +2,7 @@
 
 ## Dynamic Sankey Flow Visualizer
 
-A live-updating, animated Sankey diagram built with D3.js and Vite — designed to be flexible for storytelling, monitoring, and exploratory data analysis.
+A live-updating, animated [Sankey diagram](https://en.wikipedia.org/wiki/Sankey_diagram) built with D3.js and Vite — designed to be flexible for storytelling, monitoring, and exploratory data analysis.
 
 ## Features
 
