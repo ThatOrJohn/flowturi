@@ -30,6 +30,7 @@ const App = () => {
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [error, setError] = useState(null);
   const [theme, setTheme] = useState(getPreferredTheme());
+  const [fileInfo, setFileInfo] = useState(null); // Track file information
   const speedMenuRef = useRef(null);
 
   // Apply theme to <body> for full-page theming
@@ -53,8 +54,17 @@ const App = () => {
     const file = event.target.files[0];
     if (!file) {
       setError("No file selected.");
+      setFileInfo(null);
       return;
     }
+
+    // Store file information
+    setFileInfo({
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      lastModified: new Date(file.lastModified).toLocaleString(),
+    });
 
     const fileName = file.name.toLowerCase();
     if (!fileName.endsWith(".json") && !fileName.endsWith(".csv")) {
@@ -167,6 +177,14 @@ const App = () => {
           }
         }
 
+        // Update file info with data-specific details
+        setFileInfo((prev) => ({
+          ...prev,
+          snapshots: parsedData.length,
+          nodes: parsedData[0]?.nodes.length || 0,
+          links: parsedData[0]?.links.length || 0,
+        }));
+
         setSnapshots(parsedData);
         setCurrentIndex(0);
         setIsPlaying(false);
@@ -275,6 +293,57 @@ const App = () => {
     </div>
   );
 
+  // Format file size nicely
+  const formatFileSize = (bytes) => {
+    if (bytes < 1024) return bytes + " bytes";
+    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
+    else return (bytes / 1048576).toFixed(1) + " MB";
+  };
+
+  // File info panel JSX
+  const fileInfoPanel = (
+    <div className={`file-info-panel ${theme}`}>
+      <h3>File Information</h3>
+      {fileInfo ? (
+        <div className="file-stats">
+          <p>
+            <strong>Name:</strong> {fileInfo.name}
+          </p>
+          <p>
+            <strong>Size:</strong> {formatFileSize(fileInfo.size)}
+          </p>
+          <p>
+            <strong>Type:</strong> {fileInfo.type}
+          </p>
+          <p>
+            <strong>Modified:</strong> {fileInfo.lastModified}
+          </p>
+          {fileInfo.snapshots && (
+            <>
+              <p>
+                <strong>Snapshots:</strong> {fileInfo.snapshots}
+              </p>
+              <p>
+                <strong>Nodes:</strong> {fileInfo.nodes}
+              </p>
+              <p>
+                <strong>Links:</strong> {fileInfo.links}
+              </p>
+              {currentSnapshot && (
+                <p>
+                  <strong>Current Frame:</strong> {currentIndex + 1} of{" "}
+                  {snapshots.length}
+                </p>
+              )}
+            </>
+          )}
+        </div>
+      ) : (
+        <p>No file loaded</p>
+      )}
+    </div>
+  );
+
   // File upload input JSX (Dropzone)
   const fileUploadInput = (
     <div className={`file-upload-dropzone ${theme}`} {...getRootProps()}>
@@ -310,12 +379,18 @@ const App = () => {
       </div>
       {error ? (
         <>
-          {fileUploadInput}
+          <div className="file-control-row">
+            {fileUploadInput}
+            {fileInfoPanel}
+          </div>
           <p className="error-message">{error}</p>
         </>
       ) : snapshots.length === 0 ? (
         <>
-          {fileUploadInput}
+          <div className="file-control-row">
+            {fileUploadInput}
+            {fileInfoPanel}
+          </div>
           <p className="no-data-message">
             Please upload a JSON or CSV file to visualize.
           </p>
@@ -398,7 +473,10 @@ const App = () => {
           <ErrorBoundary>
             <SankeyDiagram data={currentSnapshot} />
           </ErrorBoundary>
-          {fileUploadInput}
+          <div className="file-control-row">
+            {fileUploadInput}
+            {fileInfoPanel}
+          </div>
         </>
       )}
     </div>
