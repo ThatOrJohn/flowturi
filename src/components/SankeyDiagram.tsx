@@ -4,14 +4,64 @@ import {
   sankey as d3Sankey,
   sankeyLinkHorizontal,
   sankeyJustify,
+  SankeyLink,
 } from "d3-sankey";
 
-const SankeyDiagram = ({ data }) => {
-  const svgRef = useRef(null);
-  const [nodeOrder, setNodeOrder] = useState(null);
-  const [nodePositions, setNodePositions] = useState(null);
+interface Node {
+  name: string;
+  value?: number;
+  x0?: number;
+  x1?: number;
+  y0?: number;
+  y1?: number;
+  depth?: number;
+  depthCategory?: "source" | "intermediate" | "sink";
+  sourceLinks?: Link[];
+  targetLinks?: Link[];
+}
 
-  const colorConfig = {
+interface Link {
+  source: string | number;
+  target: string | number;
+  value: number;
+  width?: number;
+}
+
+interface SankeyData {
+  nodes: Node[];
+  links: Link[];
+}
+
+interface ColorConfig {
+  nodes: {
+    source: string;
+    intermediate: string;
+    sink: string;
+    hover: string;
+  };
+  links: {
+    base: string;
+    hoverOpacity: number;
+    defaultOpacity: number;
+  };
+  thresholds: {
+    warning: number;
+    critical: number;
+    warningColor: string;
+    criticalColor: string;
+  };
+}
+
+interface SankeyDiagramProps {
+  data: SankeyData | null;
+}
+
+const SankeyDiagram: React.FC<SankeyDiagramProps> = ({ data }) => {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [nodeOrder, setNodeOrder] = useState<string[] | null>(null);
+  const [nodePositions, setNodePositions] = useState<Map<string, { y0: number; height: number }> | null>(null);
+
+  const colorConfig: ColorConfig = {
     nodes: {
       source: "#4caf50",
       intermediate: "#2196f3",
@@ -46,8 +96,8 @@ const SankeyDiagram = ({ data }) => {
       data.nodes.map((node, index) => [node.name, index])
     );
     const processedLinks = data.links.map((link) => ({
-      source: nodeMap.get(link.source),
-      target: nodeMap.get(link.target),
+      source: nodeMap.get(link.source as string) ?? 0,
+      target: nodeMap.get(link.target as string) ?? 0,
       value: link.value,
     }));
 
@@ -73,27 +123,27 @@ const SankeyDiagram = ({ data }) => {
     // Prepare nodes with fixed positions before running sankey
     const nodes = data.nodes.map((d) => ({ ...d }));
     if (!nodePositions) {
-      const sankeyTemp = d3Sankey()
+      const sankeyTemp = d3Sankey<Node, Link>()
         .nodeWidth(20)
         .nodePadding(Math.max(10, 300 / data.nodes.length))
         .extent([
           [1, 1],
           [width - 1, height - 5],
         ])
-        .nodeSort((a, b) =>
+        .nodeSort((a: Node, b: Node) =>
           nodeOrder ? nodeOrder.indexOf(a.name) - nodeOrder.indexOf(b.name) : 0
         )
         .nodeAlign(sankeyJustify);
 
       const tempData = sankeyTemp({
         nodes: nodes,
-        links: processedLinks,
+        links: processedLinks as SankeyLink<Node, Link>[],
       });
 
-      const positions = new Map(
-        tempData.nodes.map((node) => [
+      const positions = new Map<string, { y0: number; height: number }>(
+        tempData.nodes.map((node: Node) => [
           node.name,
-          { y0: node.y0, height: node.y1 - node.y0 },
+          { y0: node.y0 || 0, height: (node.y1 || 0) - (node.y0 || 0) },
         ])
       );
       setNodePositions(positions);
@@ -101,7 +151,7 @@ const SankeyDiagram = ({ data }) => {
 
     // Apply fixed positions to nodes before layout
     if (nodePositions) {
-      nodes.forEach((node) => {
+      nodes.forEach((node: Node) => {
         const pos = nodePositions.get(node.name);
         if (pos) {
           node.y0 = pos.y0;
@@ -110,49 +160,53 @@ const SankeyDiagram = ({ data }) => {
       });
     }
 
-    const sankey = d3Sankey()
+    const sankey = d3Sankey<Node, Link>()
       .nodeWidth(20)
       .nodePadding(Math.max(10, 300 / data.nodes.length))
       .extent([
         [1, 1],
         [width - 1, height - 5],
       ])
-      .nodeSort((a, b) =>
+      .nodeSort((a: Node, b: Node) =>
         nodeOrder ? nodeOrder.indexOf(a.name) - nodeOrder.indexOf(b.name) : 0
       )
       .nodeAlign(sankeyJustify);
 
     const sankeyData = sankey({
       nodes: nodes,
-      links: processedLinks,
+      links: processedLinks as SankeyLink<Node, Link>[],
     });
 
     const { nodes: finalNodes, links } = sankeyData;
 
     // Assign node depths for coloring and debug categorization
-    finalNodes.forEach((node) => {
+    finalNodes.forEach((node: Node) => {
       node.depthCategory =
         node.depth === 0
           ? "source"
-          : node.sourceLinks.length === 0
+          : node.sourceLinks?.length === 0
           ? "sink"
           : "intermediate";
       console.log(
-        `Node: ${node.name}, Depth: ${node.depth}, TargetLinks: ${node.targetLinks.length}, SourceLinks: ${node.sourceLinks.length}, Category: ${node.depthCategory}`
+        `Node: ${node.name}, Depth: ${node.depth}, TargetLinks: ${node.targetLinks?.length}, SourceLinks: ${node.sourceLinks?.length}, Category: ${node.depthCategory}`
       );
     });
 
     // Update or create links
     const link = svg
-      .selectAll(".link")
-      .data(links, (d) => `${d.source.name}-${d.target.name}`);
+      .selectAll<SVGGElement, Link>(".link")
+      .data(links, (d: Link) => {
+        const source = d.source as unknown as Node;
+        const target = d.target as unknown as Node;
+        return `${source.name}-${target.name}`;
+      });
 
     const linkEnter = link.enter().append("g").attr("class", "link");
 
     linkEnter
       .append("path")
       .attr("d", sankeyLinkHorizontal())
-      .attr("stroke-width", (d) => Math.max(1, d.width))
+      .attr("stroke-width", (d) => Math.max(1, d.width || 0))
       .attr("fill", "none")
       .attr("stroke", (d) => {
         if (d.value > colorConfig.thresholds.critical)
@@ -197,7 +251,7 @@ const SankeyDiagram = ({ data }) => {
       .transition()
       .duration(1000)
       .attr("d", sankeyLinkHorizontal())
-      .attr("stroke-width", (d) => Math.max(1, d.width))
+      .attr("stroke-width", (d) => Math.max(1, d.width || 0))
       .attr("stroke", (d) => {
         if (d.value > colorConfig.thresholds.critical)
           return colorConfig.thresholds.criticalColor;
@@ -236,14 +290,14 @@ const SankeyDiagram = ({ data }) => {
     // Update the background rect size and visibility for link labels
     linkUpdate
       .select(".link-label-group")
-      .attr("display", (d) => (d.width < 5 ? "none" : "block"))
+      .attr("display", (d) => ((d.width || 0) < 5 ? "none" : "block"))
       .each(function (d) {
         const group = d3.select(this);
         const text = group.select(".link-label");
-        const textNode = text.node();
-        const hasText = textNode.textContent && d.width >= 5;
+        const textNode = text.node() as SVGTextElement;
+        const hasText = textNode?.textContent && (d.width || 0) >= 5;
         group.attr("display", hasText ? "block" : "none");
-        if (hasText) {
+        if (hasText && textNode) {
           const bbox = textNode.getBBox();
           group
             .select(".link-label-background")
@@ -260,7 +314,9 @@ const SankeyDiagram = ({ data }) => {
       .transition()
       .duration(1000)
       .attr("transform", function (d) {
-        const path = d3.select(this.parentNode).select("path").node();
+        const group = d3.select(this);
+        const path = group.select(function() { return this.parentNode; }).select("path").node() as SVGPathElement;
+        if (!path) return "translate(0,0)";
         const length = path.getTotalLength();
         let pos = length / 2;
         let midPoint = path.getPointAtLength(pos);
@@ -273,22 +329,22 @@ const SankeyDiagram = ({ data }) => {
     link.exit().transition().duration(1000).attr("opacity", 0).remove();
 
     // Update or create nodes
-    const node = svg.selectAll(".node").data(finalNodes, (d) => d.name);
+    const node = svg.selectAll<SVGGElement, Node>(".node").data(finalNodes, (d) => d.name);
 
     const nodeEnter = node.enter().append("g").attr("class", "node");
 
     nodeEnter
       .append("rect")
-      .attr("x", (d) => d.x0)
-      .attr("y", (d) => d.y0)
-      .attr("height", (d) => d.y1 - d.y0)
-      .attr("width", (d) => d.x1 - d.x0)
-      .attr("fill", (d) => colorConfig.nodes[d.depthCategory])
+      .attr("x", (d) => d.x0 || 0)
+      .attr("y", (d) => d.y0 || 0)
+      .attr("height", (d) => (d.y1 || 0) - (d.y0 || 0))
+      .attr("width", (d) => (d.x1 || 0) - (d.x0 || 0))
+      .attr("fill", (d) => colorConfig.nodes[d.depthCategory || "intermediate"])
       .on("mouseover", function () {
         d3.select(this).attr("fill", colorConfig.nodes.hover);
       })
       .on("mouseout", function (event, d) {
-        d3.select(this).attr("fill", colorConfig.nodes[d.depthCategory]);
+        d3.select(this).attr("fill", colorConfig.nodes[d.depthCategory || "intermediate"]);
       });
 
     // Add node labels with a background rect
@@ -315,7 +371,9 @@ const SankeyDiagram = ({ data }) => {
     nodeUpdate.select(".node-label-group").each(function (d) {
       const group = d3.select(this);
       const text = group.select(".node-label");
-      const bbox = text.node().getBBox();
+      const textNode = text.node() as SVGTextElement;
+      if (!textNode) return;
+      const bbox = textNode.getBBox();
       const backgroundPadding = 2;
       let labelX, labelY, rectX;
       let anchor = "middle";
@@ -323,20 +381,20 @@ const SankeyDiagram = ({ data }) => {
       if (d.depthCategory === "intermediate") {
         anchor = "middle";
         text.attr("text-anchor", "middle");
-        labelX = (d.x0 + d.x1) / 2;
-        labelY = (d.y1 + d.y0) / 2;
+        labelX = ((d.x0 || 0) + (d.x1 || 0)) / 2;
+        labelY = ((d.y1 || 0) + (d.y0 || 0)) / 2;
         rectX = -((bbox.width + 2 * backgroundPadding) / 2);
       } else if (d.depthCategory === "source") {
         anchor = "start";
         text.attr("text-anchor", "start");
-        labelX = d.x0 + 5;
-        labelY = (d.y1 + d.y0) / 2;
+        labelX = (d.x0 || 0) + 5;
+        labelY = ((d.y1 || 0) + (d.y0 || 0)) / 2;
         rectX = 0;
       } else {
         anchor = "end";
         text.attr("text-anchor", "end");
-        labelX = d.x1 - 5;
-        labelY = (d.y1 + d.y0) / 2;
+        labelX = (d.x1 || 0) - 5;
+        labelY = ((d.y1 || 0) + (d.y0 || 0)) / 2;
         rectX = -(bbox.width + 2 * backgroundPadding);
       }
 
@@ -355,11 +413,11 @@ const SankeyDiagram = ({ data }) => {
       .select("rect")
       .transition()
       .duration(1000)
-      .attr("x", (d) => d.x0)
-      .attr("y", (d) => d.y0)
-      .attr("height", (d) => d.y1 - d.y0)
-      .attr("width", (d) => d.x1 - d.x0)
-      .attr("fill", (d) => colorConfig.nodes[d.depthCategory]);
+      .attr("x", (d) => d.x0 || 0)
+      .attr("y", (d) => d.y0 || 0)
+      .attr("height", (d) => (d.y1 || 0) - (d.y0 || 0))
+      .attr("width", (d) => (d.x1 || 0) - (d.x0 || 0))
+      .attr("fill", (d) => colorConfig.nodes[d.depthCategory || "intermediate"]);
 
     node.exit().transition().duration(1000).attr("opacity", 0).remove();
   }, [data, nodeOrder, nodePositions]);
@@ -371,4 +429,4 @@ const SankeyDiagram = ({ data }) => {
   );
 };
 
-export default SankeyDiagram;
+export default SankeyDiagram; 
