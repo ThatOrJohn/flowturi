@@ -316,36 +316,35 @@ const SankeyDiagram = ({ data }) => {
       const group = d3.select(this);
       const text = group.select(".node-label");
       const bbox = text.node().getBBox();
-      const padding = 10;
       const backgroundPadding = 2;
-      const totalLabelWidth = bbox.width + 2 * backgroundPadding;
-      let labelX, labelY;
+      let labelX, labelY, rectX;
+      let anchor = "middle";
 
       if (d.depthCategory === "intermediate") {
-        console.log(`Node ${d.name} categorized as intermediate`);
+        anchor = "middle";
         text.attr("text-anchor", "middle");
         labelX = (d.x0 + d.x1) / 2;
         labelY = (d.y1 + d.y0) / 2;
+        rectX = -((bbox.width + 2 * backgroundPadding) / 2);
       } else if (d.depthCategory === "source") {
-        console.log(`Node ${d.name} categorized as source`);
+        anchor = "start";
         text.attr("text-anchor", "start");
-        labelX = Math.max(padding, d.x0 + 5);
+        labelX = d.x0 + 5;
         labelY = (d.y1 + d.y0) / 2;
+        rectX = 0;
       } else {
-        console.log(`Node ${d.name} categorized as sink`);
+        anchor = "end";
         text.attr("text-anchor", "end");
-        labelX = Math.max(
-          padding + totalLabelWidth,
-          Math.min(width - padding, d.x1 - 5)
-        );
+        labelX = d.x1 - 5;
         labelY = (d.y1 + d.y0) / 2;
+        rectX = -(bbox.width + 2 * backgroundPadding);
       }
 
       group.attr("transform", `translate(${labelX}, ${labelY})`);
       group
         .select(".node-label-background")
-        .attr("x", bbox.x - backgroundPadding)
-        .attr("y", bbox.y - backgroundPadding)
+        .attr("x", rectX)
+        .attr("y", -(bbox.height / 2) - backgroundPadding)
         .attr("width", bbox.width + 2 * backgroundPadding)
         .attr("height", bbox.height + 2 * backgroundPadding);
     });
