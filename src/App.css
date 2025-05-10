@@ -384,12 +384,14 @@ body.light .theme-switch .slider:after {
   border: 2px dashed #888;
   border-radius: 8px;
   padding: 24px 16px;
-  margin: 18px auto 18px auto;
+  margin: 0;
+  flex: 1;
   max-width: 400px;
   transition: background 0.2s, border-color 0.2s;
   cursor: pointer;
   font-family: Arial, sans-serif;
 }
+
 .file-upload-dropzone.dark {
   background: #23262f;
   border-color: #aaa;
@@ -429,4 +431,74 @@ body.light .theme-switch .slider:after {
 }
 .dropzone-select-btn.light:hover {
   background: #e8f0fe;
+}
+
+/* File control row layout */
+.file-control-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 20px;
+  margin: 18px auto;
+  max-width: 900px;
+}
+
+/* File info panel styles */
+.file-info-panel {
+  flex: 1;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: left;
+  font-family: Arial, sans-serif;
+  min-height: 200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: background 0.2s, color 0.2s;
+}
+
+.file-info-panel.dark {
+  background: #23262f;
+  color: #f3f3f3;
+  border: 1px solid #3d3e42;
+}
+
+.file-info-panel.light {
+  background: #fff;
+  color: #181a20;
+  border: 1px solid #e0e0e0;
+}
+
+.file-info-panel h3 {
+  font-size: 1.2em;
+  margin-top: 0;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 10px;
+}
+
+.file-info-panel.dark h3 {
+  border-color: #3d3e42;
+}
+
+.file-stats p {
+  margin: 8px 0;
+  font-size: 0.95em;
+}
+
+.file-stats strong {
+  font-weight: 600;
+  display: inline-block;
+  min-width: 100px;
+}
+
+/* Responsive layout for mobile */
+@media (max-width: 768px) {
+  .file-control-row {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .file-upload-dropzone,
+  .file-info-panel {
+    width: 100%;
+    max-width: 100%;
+  }
 }
