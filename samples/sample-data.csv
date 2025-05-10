@@ -1,7 +1,10 @@
 timestamp,source,target,value
-2025-05-08 11:22:56,Tank A,Pump 1,10.0
-2025-05-08 11:22:56,Pump 1,Bypass,2.0
-2025-05-08 11:22:56,Pump 1,Tank B,8.0
-2025-05-08 11:23:00,Tank A,Pump 1,12.0
-2025-05-08 11:23:00,Pump 1,Bypass,3.0
-2025-05-08 11:23:00,Pump 1,Tank B,9.0
+2025-05-08 11:22:56,Spacely Sprockets,Cosmos DB,10.0
+2025-05-08 11:22:56,Event Queue,S3,2.0
+2025-05-08 11:22:56,Event Queue,Relational DB,8.0
+2025-05-08 11:23:00,Spacely Sprockets,Event Queue,12.0
+2025-05-08 11:23:00,Event Queue,S3,3.0
+2025-05-08 11:23:00,Event Queue,Relational DB,9.0
+2025-05-08 11:25:00,Spacely Sprockets,Event Queue,12.0
+2025-05-08 11:25:00,Event Queue,S3,3.0
+2025-05-08 11:25:00,S3,Relational DB,9.0
