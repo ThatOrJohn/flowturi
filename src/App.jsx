@@ -1,18 +1,52 @@
 import { useEffect, useState, useRef } from "react";
+import { useDropzone } from "react-dropzone";
 import SankeyDiagram from "./components/SankeyDiagram";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Papa from "papaparse";
 import "./App.css";
 
+const THEME_KEY = "flowturi-theme";
+
+const getPreferredTheme = () => {
+  // Check localStorage first
+  const stored = localStorage.getItem(THEME_KEY);
+  if (stored === "light" || stored === "dark") return stored;
+  // Check OS-level preference
+  if (
+    window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: light)").matches
+  ) {
+    return "light";
+  }
+  // Default to dark
+  return "dark";
+};
+
 const App = () => {
   const [snapshots, setSnapshots] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [playbackSpeed, setPlaybackSpeed] = useState(1000); // Base interval (1s) adjusted by speed multiplier
   const [speedMultiplier, setSpeedMultiplier] = useState(1); // Speed multiplier (0.25x to 2x)
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [error, setError] = useState(null);
+  const [theme, setTheme] = useState(getPreferredTheme());
   const speedMenuRef = useRef(null);
+
+  // Apply theme to <body> for full-page theming
+  useEffect(() => {
+    document.body.className = theme;
+    localStorage.setItem(THEME_KEY, theme);
+  }, [theme]);
+
+  // Listen for OS-level theme changes if user hasn't overridden
+  useEffect(() => {
+    const stored = localStorage.getItem(THEME_KEY);
+    if (stored === "light" || stored === "dark") return; // user override
+    const mq = window.matchMedia("(prefers-color-scheme: light)");
+    const handler = (e) => setTheme(e.matches ? "light" : "dark");
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   // Handle file upload
   const handleFileUpload = (event) => {
@@ -203,22 +237,77 @@ const App = () => {
 
   const currentSnapshot = snapshots[currentIndex] || null;
 
-  // File upload input JSX
+  // Dropzone file upload handler
+  const onDrop = (acceptedFiles) => {
+    if (acceptedFiles && acceptedFiles.length > 0) {
+      // Simulate a synthetic event for handleFileUpload
+      const file = acceptedFiles[0];
+      handleFileUpload({ target: { files: [file] } });
+    }
+  };
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "application/json": [".json"],
+      "text/csv": [".csv"],
+    },
+    multiple: false,
+  });
+
+  // Theme toggle handler
+  const toggleTheme = () =>
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+
+  // Theme toggle switch (A11y, Dribbble-inspired, text only, with side labels)
+  const themeToggleSwitch = (
+    <div className="theme-toggle-bar">
+      <span className="theme-label-left">DARK</span>
+      <label className="theme-switch" title="Toggle light/dark mode">
+        <input
+          type="checkbox"
+          checked={theme === "dark"}
+          onChange={toggleTheme}
+          aria-label="Toggle dark mode"
+        />
+        <span className="slider" />
+      </label>
+      <span className="theme-label-right">LIGHT</span>
+    </div>
+  );
+
+  // File upload input JSX (Dropzone)
   const fileUploadInput = (
-    <div className="file-upload">
-      <label htmlFor="file-upload">Upload JSON or CSV File:</label>
-      <input
-        type="file"
-        id="file-upload"
-        accept=".json,.csv"
-        onChange={handleFileUpload}
-      />
+    <div className={`file-upload-dropzone ${theme}`} {...getRootProps()}>
+      <input {...getInputProps()} />
+      {isDragActive ? (
+        <p>Drop the JSON or CSV file here...</p>
+      ) : (
+        <>
+          <p>
+            <b>Upload JSON or CSV File:</b>
+          </p>
+          <button type="button" className={`dropzone-select-btn ${theme}`}>
+            Select File
+          </button>
+          <p
+            style={{
+              fontSize: "0.9em",
+              color: theme === "dark" ? "#aaa" : "#555",
+            }}
+          >
+            or drag and drop a file here
+          </p>
+        </>
+      )}
     </div>
   );
 
   return (
-    <div className="App">
-      <h1>Flowturi Studio</h1>
+    <div className={`App ${theme}`}>
+      <div className="app-header">
+        <h1>Flowturi Studio</h1>
+        {themeToggleSwitch}
+      </div>
       {error ? (
         <>
           {fileUploadInput}
