@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
-import {
-  sankey as d3Sankey,
-  sankeyLinkHorizontal,
-  sankeyJustify,
-  SankeyLink,
-} from "d3-sankey";
+import { computeLayout, LayoutState, FrameData } from "../layout/computeLayout";
+import "./SankeyDiagram.css";
 
 interface Node {
   name: string;
@@ -15,16 +11,18 @@ interface Node {
   y0?: number;
   y1?: number;
   depth?: number;
+  layer?: number;
   depthCategory?: "source" | "intermediate" | "sink";
   sourceLinks?: Link[];
   targetLinks?: Link[];
 }
 
 interface Link {
-  source: string | number;
-  target: string | number;
+  source: string | number | Node;
+  target: string | number | Node;
   value: number;
   width?: number;
+  path?: string;
 }
 
 interface SankeyData {
@@ -53,13 +51,27 @@ interface ColorConfig {
 }
 
 interface SankeyDiagramProps {
-  data: SankeyData | null;
+  data?: SankeyData | null;
+  snapshots?: FrameData[]; // Added for multiple frames
+  currentIndex?: number; // Current frame index
 }
 
-const SankeyDiagram: React.FC<SankeyDiagramProps> = ({ data }) => {
+const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
+  data,
+  snapshots = [],
+  currentIndex = 0,
+}) => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [nodeOrder, setNodeOrder] = useState<string[] | null>(null);
-  const [nodePositions, setNodePositions] = useState<Map<string, { y0: number; height: number }> | null>(null);
+  const [layoutStates, setLayoutStates] = useState<LayoutState[]>([]);
+  const [currentLayoutState, setCurrentLayoutState] =
+    useState<LayoutState | null>(null);
+  const [colorScale, setColorScale] =
+    useState<d3.ScaleOrdinal<string, string, never>>();
+  const [error, setError] = useState<string | null>(null);
+
+  const width = 800;
+  const height = 600;
+  const margin = { top: 0, right: 0, bottom: 0, left: 0 };
 
   const colorConfig: ColorConfig = {
     nodes: {
@@ -81,352 +93,408 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({ data }) => {
     },
   };
 
+  // Compute stable layout for all frames
   useEffect(() => {
-    if (!svgRef.current || !data || !data.nodes || !data.links) {
-      console.log("SankeyDiagram: Skipping render - invalid data", data);
-      return;
-    }
+    if (snapshots.length === 0) return;
 
-    const svg = d3.select(svgRef.current);
-    const width = 800;
-    const height = 600;
+    try {
+      console.log(`Computing layout for ${snapshots.length} frames...`);
 
-    // Map node names to indices for d3-sankey
-    const nodeMap = new Map(
-      data.nodes.map((node, index) => [node.name, index])
-    );
-    const processedLinks = data.links.map((link) => ({
-      source: nodeMap.get(link.source as string) ?? 0,
-      target: nodeMap.get(link.target as string) ?? 0,
-      value: link.value,
-    }));
-
-    // Validate links
-    if (
-      processedLinks.some(
-        (link) => link.source === undefined || link.target === undefined
-      )
-    ) {
-      console.error(
-        "Invalid links: Some source or target nodes not found",
-        processedLinks
-      );
-      return;
-    }
-
-    // Set fixed node order on first render
-    if (!nodeOrder) {
-      const initialOrder = data.nodes.map((node) => node.name).sort();
-      setNodeOrder(initialOrder);
-    }
-
-    // Prepare nodes with fixed positions before running sankey
-    const nodes = data.nodes.map((d) => ({ ...d }));
-    if (!nodePositions) {
-      const sankeyTemp = d3Sankey<Node, Link>()
-        .nodeWidth(20)
-        .nodePadding(Math.max(10, 300 / data.nodes.length))
-        .extent([
-          [1, 1],
-          [width - 1, height - 5],
-        ])
-        .nodeSort((a: Node, b: Node) =>
-          nodeOrder ? nodeOrder.indexOf(a.name) - nodeOrder.indexOf(b.name) : 0
-        )
-        .nodeAlign(sankeyJustify);
-
-      const tempData = sankeyTemp({
-        nodes: nodes,
-        links: processedLinks as SankeyLink<Node, Link>[],
-      });
-
-      const positions = new Map<string, { y0: number; height: number }>(
-        tempData.nodes.map((node: Node) => [
-          node.name,
-          { y0: node.y0 || 0, height: (node.y1 || 0) - (node.y0 || 0) },
-        ])
-      );
-      setNodePositions(positions);
-    }
-
-    // Apply fixed positions to nodes before layout
-    if (nodePositions) {
-      nodes.forEach((node: Node) => {
-        const pos = nodePositions.get(node.name);
-        if (pos) {
-          node.y0 = pos.y0;
-          node.y1 = pos.y0 + pos.height;
+      // Validate input data
+      const validSnapshots = snapshots.filter((snapshot) => {
+        if (!snapshot.nodes || !snapshot.links || snapshot.nodes.length === 0) {
+          console.warn(`Skipping snapshot with invalid data:`, snapshot);
+          return false;
         }
+        return true;
       });
-    }
 
-    const sankey = d3Sankey<Node, Link>()
-      .nodeWidth(20)
-      .nodePadding(Math.max(10, 300 / data.nodes.length))
-      .extent([
-        [1, 1],
-        [width - 1, height - 5],
-      ])
-      .nodeSort((a: Node, b: Node) =>
-        nodeOrder ? nodeOrder.indexOf(a.name) - nodeOrder.indexOf(b.name) : 0
-      )
-      .nodeAlign(sankeyJustify);
+      if (validSnapshots.length === 0) {
+        setError("No valid snapshots found in the data");
+        return;
+      }
 
-    const sankeyData = sankey({
-      nodes: nodes,
-      links: processedLinks as SankeyLink<Node, Link>[],
-    });
+      const states = computeLayout(validSnapshots, width, height);
 
-    const { nodes: finalNodes, links } = sankeyData;
+      if (states.length === 0) {
+        setError("Layout computation failed to produce any valid states");
+        return;
+      }
 
-    // Assign node depths for coloring and debug categorization
-    finalNodes.forEach((node: Node) => {
-      node.depthCategory =
-        node.depth === 0
-          ? "source"
-          : node.sourceLinks?.length === 0
-          ? "sink"
-          : "intermediate";
-      console.log(
-        `Node: ${node.name}, Depth: ${node.depth}, TargetLinks: ${node.targetLinks?.length}, SourceLinks: ${node.sourceLinks?.length}, Category: ${node.depthCategory}`
+      setLayoutStates(states);
+      setError(null);
+
+      // Create color scale for nodes
+      const allNodeNames = new Set<string>();
+      validSnapshots.forEach((frame) => {
+        frame.nodes.forEach((node) => allNodeNames.add(node.name));
+      });
+
+      setColorScale(
+        d3
+          .scaleOrdinal<string>()
+          .domain(Array.from(allNodeNames))
+          .range(d3.schemeCategory10)
       );
-    });
+    } catch (err) {
+      console.error("Error computing layout:", err);
+      setError("Error in layout computation");
+    }
+  }, [snapshots, width, height]);
 
-    // Update or create links
-    const link = svg
-      .selectAll<SVGGElement, Link>(".link")
-      .data(links, (d: Link) => {
-        const source = d.source as unknown as Node;
-        const target = d.target as unknown as Node;
-        return `${source.name}-${target.name}`;
+  // Update current layout state when index changes
+  useEffect(() => {
+    if (!layoutStates.length) return;
+
+    // Ensure currentIndex is within bounds
+    const safeIndex = Math.min(
+      Math.max(0, currentIndex),
+      layoutStates.length - 1
+    );
+    setCurrentLayoutState(layoutStates[safeIndex]);
+  }, [layoutStates, currentIndex]);
+
+  // Render the chart using the current layout state
+  useEffect(() => {
+    if (!svgRef.current || !currentLayoutState) return;
+
+    try {
+      const svg = d3.select(svgRef.current);
+      svg.selectAll("*").remove(); // Clear previous rendering
+
+      const g = svg.append("g");
+
+      // Get all nodes and links from current layout state
+      const nodeNames = Object.keys(currentLayoutState.nodePositions);
+
+      if (nodeNames.length === 0) {
+        console.warn("No nodes in current layout state");
+        return;
+      }
+
+      const nodes: Node[] = nodeNames.map((name) => {
+        const pos = currentLayoutState.nodePositions[name];
+        return {
+          name,
+          x0: pos.x,
+          x1: pos.x + (pos.width || 20),
+          y0: pos.y,
+          y1: pos.y + pos.height,
+          layer: pos.layer,
+          // Determine node type by layer
+          depthCategory:
+            pos.layer === 0
+              ? "source"
+              : currentLayoutState.linkPaths.some(
+                  (l) =>
+                    l.target === name &&
+                    !currentLayoutState.linkPaths.some(
+                      (l2) => l2.source === name
+                    )
+                )
+              ? "sink"
+              : "intermediate",
+        };
       });
 
-    const linkEnter = link.enter().append("g").attr("class", "link");
+      if (currentLayoutState.linkPaths.length === 0) {
+        console.warn("No links in current layout state");
+      }
 
-    linkEnter
-      .append("path")
-      .attr("d", sankeyLinkHorizontal())
-      .attr("stroke-width", (d) => Math.max(1, d.width || 0))
-      .attr("fill", "none")
-      .attr("stroke", (d) => {
-        if (d.value > colorConfig.thresholds.critical)
-          return colorConfig.thresholds.criticalColor;
-        if (d.value > colorConfig.thresholds.warning)
-          return colorConfig.thresholds.warningColor;
-        return colorConfig.links.base;
-      })
-      .attr("stroke-opacity", colorConfig.links.defaultOpacity)
-      .on("mouseover", function () {
-        d3.select(this).attr("stroke-opacity", colorConfig.links.hoverOpacity);
-      })
-      .on("mouseout", function () {
-        d3.select(this).attr(
-          "stroke-opacity",
-          colorConfig.links.defaultOpacity
-        );
-      });
+      const links: Link[] = currentLayoutState.linkPaths.map((linkPath) => ({
+        source: linkPath.source,
+        target: linkPath.target,
+        value: linkPath.value,
+        path: linkPath.path,
+      }));
 
-    // Add link labels with a background rect
-    linkEnter
-      .append("g")
-      .attr("class", "link-label-group")
-      .call((g) => {
-        g.append("rect")
-          .attr("class", "link-label-background")
-          .attr("fill", "#ffffff")
-          .attr("rx", 2)
-          .attr("ry", 2);
-        g.append("text")
-          .attr("class", "link-label")
-          .attr("dy", "0.35em")
-          .attr("fill", "#212121")
-          .attr("font-size", "10px")
-          .attr("text-anchor", "middle");
-      });
+      // Draw links
+      const link = g
+        .selectAll(".link")
+        .data(links)
+        .enter()
+        .append("g")
+        .attr("class", "link");
 
-    const linkUpdate = link.merge(linkEnter);
+      link
+        .append("path")
+        .attr("d", (d) => d.path || "")
+        .attr("fill", "none")
+        .attr("stroke", (d) => {
+          if (d.value > colorConfig.thresholds.critical)
+            return colorConfig.thresholds.criticalColor;
+          if (d.value > colorConfig.thresholds.warning)
+            return colorConfig.thresholds.warningColor;
+          return colorConfig.links.base;
+        })
+        .attr("stroke-width", (d) => Math.max(1, Math.sqrt(d.value)))
+        .attr("stroke-opacity", colorConfig.links.defaultOpacity)
+        .on("mouseover", function () {
+          d3.select(this).attr(
+            "stroke-opacity",
+            colorConfig.links.hoverOpacity
+          );
+        })
+        .on("mouseout", function () {
+          d3.select(this).attr(
+            "stroke-opacity",
+            colorConfig.links.defaultOpacity
+          );
+        });
 
-    linkUpdate
-      .select("path")
-      .transition()
-      .duration(1000)
-      .attr("d", sankeyLinkHorizontal())
-      .attr("stroke-width", (d) => Math.max(1, d.width || 0))
-      .attr("stroke", (d) => {
-        if (d.value > colorConfig.thresholds.critical)
-          return colorConfig.thresholds.criticalColor;
-        if (d.value > colorConfig.thresholds.warning)
-          return colorConfig.thresholds.warningColor;
-        return colorConfig.links.base;
-      })
-      .attr("stroke-opacity", colorConfig.links.defaultOpacity);
-
-    // Ensure all links have a label group
-    linkUpdate.each(function () {
-      const group = d3.select(this);
-      if (!group.select(".link-label-group").node()) {
-        group
+      // Add link value labels only if links exist and aren't too small
+      if (links.length > 0) {
+        link
+          .filter((d) => d.value > 3) // Only show labels for larger links
           .append("g")
           .attr("class", "link-label-group")
-          .call((g) => {
-            g.append("rect")
-              .attr("class", "link-label-background")
-              .attr("fill", "#ffffff")
-              .attr("rx", 2)
-              .attr("ry", 2);
-            g.append("text")
-              .attr("class", "link-label")
-              .attr("dy", "0.35em")
-              .attr("fill", "#212121")
-              .attr("font-size", "10px")
-              .attr("text-anchor", "middle");
+          .each(function (d) {
+            try {
+              const path = d3
+                .select(this.parentNode as Element)
+                .select("path")
+                .node() as SVGPathElement;
+
+              if (!path) return;
+
+              // Position label in the middle of the path
+              const length = path.getTotalLength();
+              if (length === 0) return; // Skip zero-length paths
+
+              const midPoint = path.getPointAtLength(length / 2);
+
+              const g = d3
+                .select(this)
+                .attr("transform", `translate(${midPoint.x}, ${midPoint.y})`);
+
+              // Add background
+              g.append("rect")
+                .attr("class", "link-label-background")
+                .attr("fill", "white")
+                .attr("rx", 2)
+                .attr("ry", 2);
+
+              // Add text
+              g.append("text")
+                .attr("class", "link-label")
+                .attr("dy", "0.35em")
+                .attr("text-anchor", "middle")
+                .attr("fill", "#212121")
+                .attr("font-size", "10px")
+                .text(d.value.toFixed(1));
+
+              // Adjust background size
+              const text = g.select("text").node() as SVGTextElement;
+              if (text) {
+                const bbox = text.getBBox();
+                g.select("rect")
+                  .attr("x", bbox.x - 2)
+                  .attr("y", bbox.y - 2)
+                  .attr("width", bbox.width + 4)
+                  .attr("height", bbox.height + 4);
+              }
+            } catch (error) {
+              console.warn("Error creating link label:", error);
+            }
           });
       }
-    });
 
-    // Update link labels and their backgrounds
-    linkUpdate.select(".link-label").text((d) => d.value.toFixed(1));
+      // Draw nodes
+      const node = g
+        .selectAll(".node")
+        .data(nodes)
+        .enter()
+        .append("g")
+        .attr("class", "node")
+        .attr("transform", (d) => `translate(${d.x0}, ${d.y0})`);
 
-    // Update the background rect size and visibility for link labels
-    linkUpdate
-      .select(".link-label-group")
-      .attr("display", (d) => ((d.width || 0) < 5 ? "none" : "block"))
-      .each(function (d) {
-        const group = d3.select(this);
-        const text = group.select(".link-label");
-        const textNode = text.node() as SVGTextElement;
-        const hasText = textNode?.textContent && (d.width || 0) >= 5;
-        group.attr("display", hasText ? "block" : "none");
-        if (hasText && textNode) {
-          const bbox = textNode.getBBox();
-          group
-            .select(".link-label-background")
-            .attr("x", bbox.x - 2)
-            .attr("y", bbox.y - 2)
-            .attr("width", bbox.width + 4)
-            .attr("height", bbox.height + 4);
-        }
-      });
+      node
+        .append("rect")
+        .attr("width", (d) => (d.x1 || 0) - (d.x0 || 0))
+        .attr("height", (d) => (d.y1 || 0) - (d.y0 || 0))
+        .attr(
+          "fill",
+          (d) => colorConfig.nodes[d.depthCategory || "intermediate"]
+        )
+        .on("mouseover", function () {
+          d3.select(this).attr("fill", colorConfig.nodes.hover);
+        })
+        .on("mouseout", function (_, d) {
+          d3.select(this).attr(
+            "fill",
+            colorConfig.nodes[d.depthCategory || "intermediate"]
+          );
+        });
 
-    // Position the link label group with vertical offset to avoid node labels
-    linkUpdate
-      .select(".link-label-group")
-      .transition()
-      .duration(1000)
-      .attr("transform", function (d) {
-        const group = d3.select(this);
-        const path = group.select(function() { return this.parentNode; }).select("path").node() as SVGPathElement;
-        if (!path) return "translate(0,0)";
-        const length = path.getTotalLength();
-        let pos = length / 2;
-        let midPoint = path.getPointAtLength(pos);
-        midPoint.x = Math.max(20, Math.min(width - 20, midPoint.x));
-        midPoint.y = Math.max(20, Math.min(height - 20, midPoint.y));
-        const offset = -15;
-        return `translate(${midPoint.x}, ${midPoint.y + offset})`;
-      });
+      // Add node labels
+      node
+        .append("g")
+        .attr("class", "node-label-group")
+        .each(function (d) {
+          try {
+            const g = d3.select(this);
+            const width = (d.x1 || 0) - (d.x0 || 0);
+            const height = (d.y1 || 0) - (d.y0 || 0);
 
-    link.exit().transition().duration(1000).attr("opacity", 0).remove();
+            if (width <= 0 || height <= 0) return; // Skip invalid dimensions
 
-    // Update or create nodes
-    const node = svg.selectAll<SVGGElement, Node>(".node").data(finalNodes, (d) => d.name);
+            let x = width / 2;
+            let textAnchor = "middle";
 
-    const nodeEnter = node.enter().append("g").attr("class", "node");
+            // Adjust position based on node type
+            if (d.depthCategory === "source") {
+              x = width + 5;
+              textAnchor = "start";
+            } else if (d.depthCategory === "sink") {
+              x = -5;
+              textAnchor = "end";
+            }
 
-    nodeEnter
-      .append("rect")
-      .attr("x", (d) => d.x0 || 0)
-      .attr("y", (d) => d.y0 || 0)
-      .attr("height", (d) => (d.y1 || 0) - (d.y0 || 0))
-      .attr("width", (d) => (d.x1 || 0) - (d.x0 || 0))
-      .attr("fill", (d) => colorConfig.nodes[d.depthCategory || "intermediate"])
-      .on("mouseover", function () {
-        d3.select(this).attr("fill", colorConfig.nodes.hover);
-      })
-      .on("mouseout", function (event, d) {
-        d3.select(this).attr("fill", colorConfig.nodes[d.depthCategory || "intermediate"]);
-      });
+            // Add background first
+            g.append("rect")
+              .attr("class", "node-label-background")
+              .attr("fill", "#f0f0f0")
+              .attr("rx", 2)
+              .attr("ry", 2);
 
-    // Add node labels with a background rect
-    nodeEnter
-      .append("g")
-      .attr("class", "node-label-group")
-      .call((g) => {
-        g.append("rect")
-          .attr("class", "node-label-background")
-          .attr("fill", "#f0f0f0")
-          .attr("rx", 2)
-          .attr("ry", 2);
-        g.append("text")
-          .attr("class", "node-label")
-          .attr("dy", "0.35em")
-          .attr("fill", "#212121")
-          .attr("font-size", "12px")
-          .text((d) => d.name);
-      });
+            // Add text
+            g.append("text")
+              .attr("class", "node-label")
+              .attr("x", x)
+              .attr("y", height / 2)
+              .attr("dy", "0.35em")
+              .attr("text-anchor", textAnchor)
+              .attr("fill", "#212121")
+              .attr("font-size", "12px")
+              .text(d.name);
 
-    // Update node label positions and backgrounds
-    const nodeUpdate = node.merge(nodeEnter);
+            // Adjust background size
+            const text = g.select("text").node() as SVGTextElement;
+            if (text) {
+              const bbox = text.getBBox();
+              const bgX =
+                textAnchor === "start"
+                  ? x
+                  : textAnchor === "end"
+                  ? x - bbox.width
+                  : x - bbox.width / 2;
 
-    nodeUpdate.select(".node-label-group").each(function (d) {
-      const group = d3.select(this);
-      const text = group.select(".node-label");
-      const textNode = text.node() as SVGTextElement;
-      if (!textNode) return;
-      const bbox = textNode.getBBox();
-      const backgroundPadding = 2;
-      let labelX, labelY, rectX;
-      let anchor = "middle";
+              g.select("rect")
+                .attr("x", bgX - 2)
+                .attr("y", bbox.y - 2)
+                .attr("width", bbox.width + 4)
+                .attr("height", bbox.height + 4);
+            }
+          } catch (error) {
+            console.warn("Error creating node label:", error);
+          }
+        });
 
-      if (d.depthCategory === "intermediate") {
-        anchor = "middle";
-        text.attr("text-anchor", "middle");
-        labelX = ((d.x0 || 0) + (d.x1 || 0)) / 2;
-        labelY = ((d.y1 || 0) + (d.y0 || 0)) / 2;
-        rectX = -((bbox.width + 2 * backgroundPadding) / 2);
-      } else if (d.depthCategory === "source") {
-        anchor = "start";
-        text.attr("text-anchor", "start");
-        labelX = (d.x0 || 0) + 5;
-        labelY = ((d.y1 || 0) + (d.y0 || 0)) / 2;
-        rectX = 0;
-      } else {
-        anchor = "end";
-        text.attr("text-anchor", "end");
-        labelX = (d.x1 || 0) - 5;
-        labelY = ((d.y1 || 0) + (d.y0 || 0)) / 2;
-        rectX = -(bbox.width + 2 * backgroundPadding);
+      // Add hover titles
+      node
+        .append("title")
+        .text((d) => `${d.name}\nLayer: ${d.layer}\nType: ${d.depthCategory}`);
+    } catch (err) {
+      console.error("Error rendering Sankey diagram:", err);
+      setError("Error rendering diagram");
+    }
+  }, [currentLayoutState, colorConfig]);
+
+  // Backward compatibility for single frame data
+  useEffect(() => {
+    if (!data || !data.nodes || !data.links || snapshots.length > 0) return;
+
+    try {
+      // Ensure the data has valid nodes and links
+      if (data.nodes.length === 0) {
+        setError("No nodes in data");
+        return;
       }
 
-      group.attr("transform", `translate(${labelX}, ${labelY})`);
-      group
-        .select(".node-label-background")
-        .attr("x", rectX)
-        .attr("y", -(bbox.height / 2) - backgroundPadding)
-        .attr("width", bbox.width + 2 * backgroundPadding)
-        .attr("height", bbox.height + 2 * backgroundPadding);
-    });
+      if (data.links.length === 0) {
+        setError("No links in data");
+        return;
+      }
 
-    nodeEnter.append("title").text((d) => `${d.name}\nValue: ${d.value || 0}`);
+      // Validate links - all source and target nodes must exist
+      const nodeNames = new Set(data.nodes.map((n) => n.name));
+      const validLinks = data.links.filter((link) => {
+        const sourceName =
+          typeof link.source === "string"
+            ? link.source
+            : typeof link.source === "number"
+            ? data.nodes[link.source]?.name
+            : (link.source as Node).name;
 
-    nodeUpdate
-      .select("rect")
-      .transition()
-      .duration(1000)
-      .attr("x", (d) => d.x0 || 0)
-      .attr("y", (d) => d.y0 || 0)
-      .attr("height", (d) => (d.y1 || 0) - (d.y0 || 0))
-      .attr("width", (d) => (d.x1 || 0) - (d.x0 || 0))
-      .attr("fill", (d) => colorConfig.nodes[d.depthCategory || "intermediate"]);
+        const targetName =
+          typeof link.target === "string"
+            ? link.target
+            : typeof link.target === "number"
+            ? data.nodes[link.target]?.name
+            : (link.target as Node).name;
 
-    node.exit().transition().duration(1000).attr("opacity", 0).remove();
-  }, [data, nodeOrder, nodePositions]);
+        return nodeNames.has(sourceName) && nodeNames.has(targetName);
+      });
 
-  return !data || !data.nodes || !data.links ? (
-    <p style={{ textAlign: "center" }}>No data to display</p>
-  ) : (
-    <svg ref={svgRef} width={800} height={600}></svg>
+      if (validLinks.length === 0) {
+        setError("No valid links in data");
+        return;
+      }
+
+      // Convert single data object to frames format
+      const singleFrame: FrameData = {
+        timestamp: new Date().toISOString(),
+        nodes: data.nodes.map((node) => ({ name: node.name })),
+        links: validLinks.map((link) => ({
+          source:
+            typeof link.source === "string"
+              ? link.source
+              : typeof link.source === "number"
+              ? data.nodes[link.source].name
+              : (link.source as Node).name,
+          target:
+            typeof link.target === "string"
+              ? link.target
+              : typeof link.target === "number"
+              ? data.nodes[link.target].name
+              : (link.target as Node).name,
+          value: link.value,
+        })),
+      };
+
+      const states = computeLayout([singleFrame], width, height);
+      if (states.length > 0) {
+        setLayoutStates(states);
+        setCurrentLayoutState(states[0]);
+        setError(null);
+      } else {
+        setError("Failed to compute layout");
+      }
+    } catch (err) {
+      console.error("Error processing single frame data:", err);
+      setError("Error processing data");
+    }
+  }, [data, width, height]);
+
+  if (error) {
+    return <p className="sankey-error">Error: {error}</p>;
+  }
+
+  if (
+    (snapshots.length === 0 && (!data || !data.nodes || !data.links)) ||
+    !currentLayoutState
+  ) {
+    return <p className="no-data">No data to display</p>;
+  }
+
+  return (
+    <svg
+      ref={svgRef}
+      width={width}
+      height={height}
+      style={{ overflow: "visible" }} // Allow content to overflow (for node labels that exceed bounds)
+    ></svg>
   );
 };
 
-export default SankeyDiagram; 
+export default SankeyDiagram;
