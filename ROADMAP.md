@@ -13,11 +13,9 @@
 ## 2. Current State
 
 - **Tech Stack**:
-  - Toy version: HTML, vanilla JS, D3.js (v7), `d3-sankey`, static JSON data.
-  - Attempted Vite + React + TypeScript migration (on hold due to TypeScript/D3.js issues).
+  - Vite + React + TypeScript
 - **Features Implemented**:
-  - Basic Sankey diagram rendering from `demo.json` (nodes and links).
-  - Simple CSS styling (`style.css`).
+  - Basic Sankey diagram rendering (nodes and links).
 
 ## 3. Development Environment
 
