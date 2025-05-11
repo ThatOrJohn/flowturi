@@ -14,7 +14,7 @@ A live-updating, animated [Sankey diagram](https://en.wikipedia.org/wiki/Sankey_
 
 ## Demo
 
-![Flowturi animation](assets/FlowturiDemo.webm)
+![Flowturi animation](assets/FlowturiDemo.gif)
 
 ## Getting Started
 
