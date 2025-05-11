@@ -97,13 +97,32 @@ const App = () => {
     setIsPlaying(false);
   };
 
+  // Add this function to update the gauge indicator position
+  const updateGauge = (speed: number) => {
+    const indicator = document.getElementById("gauge-indicator");
+    const angle = (speed - 0.5) * 180; // Map speed (0.5x to 2x) to 0-180 degrees
+    const radians = (angle * Math.PI) / 180;
+    const x = 12 + 10 * Math.sin(radians); // Center (12,12) + radius (10)
+    const y = 12 - 10 * Math.cos(radians);
+    if (indicator) {
+      indicator.setAttribute("cx", x.toString());
+      indicator.setAttribute("cy", y.toString());
+    }
+  };
+
+  // Call updateGauge whenever speedMultiplier changes
+  useEffect(() => {
+    updateGauge(speedMultiplier);
+  }, [speedMultiplier]);
+
   const handleSpeedChange = (multiplier: number) => {
     setSpeedMultiplier(multiplier);
     setShowSpeedMenu(false);
   };
 
   const handleSpeedSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSpeedMultiplier(Number(e.target.value));
+    const newSpeed = Number(e.target.value);
+    setSpeedMultiplier(newSpeed);
   };
 
   // Reset animation to beginning
@@ -458,8 +477,37 @@ const App = () => {
                   disabled={snapshots.length <= 1}
                   title="Playback Speed"
                 >
-                  <svg className="icon" viewBox="0 0 24 24">
-                    <path d="M19.5 13.5 16 16l-3.5-3.5L9 16l-3.5-3.5L2 16V2l3.5 3.5L9 2l3.5 3.5L16 2l3.5 3.5L22 2v14l-2.5-2.5zM12 12.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0-4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z" />
+                  <svg
+                    className="icon"
+                    viewBox="0 0 24 24"
+                    style={{ width: "24px", height: "24px" }}
+                  >
+                    {/* Outer circle (gauge background) */}
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      fill="none"
+                      stroke="#e0e0e0"
+                      strokeWidth="2"
+                    />
+                    {/* Inner arc (gauge progress) */}
+                    <path
+                      d="M12 2 A10 10 0 0 1 22 12 A10 10 0 0 1 12 22"
+                      fill="none"
+                      stroke="#4a90e2"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      id="gauge-arc"
+                    />
+                    {/* Indicator dot */}
+                    <circle
+                      cx="12"
+                      cy="2"
+                      r="2"
+                      fill="#4a90e2"
+                      id="gauge-indicator"
+                    />
                   </svg>
                   <span className="speed-label">{speedMultiplier}x</span>
                 </button>
