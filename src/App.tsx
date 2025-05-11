@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useDropzone } from "react-dropzone";
 import SankeyDiagram from "./components/SankeyDiagram";
 import ErrorBoundary from "./components/ErrorBoundary";
+import RecordButton from "./components/RecordButton";
 import Papa from "papaparse";
 import { Snapshot, FileInfo } from "./types";
 import "./App.css";
@@ -33,6 +34,7 @@ const App = () => {
   const [theme, setTheme] = useState<"light" | "dark">(getPreferredTheme());
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
   const speedMenuRef = useRef<HTMLDivElement>(null);
+  const sankeyContainerRef = useRef<HTMLDivElement>(null);
 
   // Apply theme to <body> for full-page theming
   useEffect(() => {
@@ -45,7 +47,8 @@ const App = () => {
     const stored = localStorage.getItem(THEME_KEY);
     if (stored === "light" || stored === "dark") return; // user override
     const mq = window.matchMedia("(prefers-color-scheme: light)");
-    const handler = (e: MediaQueryListEvent) => setTheme(e.matches ? "light" : "dark");
+    const handler = (e: MediaQueryListEvent) =>
+      setTheme(e.matches ? "light" : "dark");
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
@@ -102,11 +105,24 @@ const App = () => {
     setSpeedMultiplier(Number(e.target.value));
   };
 
+  // Reset animation to beginning
+  const resetAnimation = () => {
+    setCurrentIndex(0);
+  };
+
+  // Calculate estimated animation duration
+  const calculateAnimationDuration = (): number => {
+    if (snapshots.length === 0) return 0;
+    return snapshots.length * (1000 / speedMultiplier);
+  };
+
   const currentSnapshot = snapshots[currentIndex] || null;
 
   // Handle file upload
-  const handleFileUpload = (file: File | { target: { files: FileList | null } }) => {
-    const actualFile = 'target' in file ? file.target.files?.[0] : file;
+  const handleFileUpload = (
+    file: File | { target: { files: FileList | null } }
+  ) => {
+    const actualFile = "target" in file ? file.target.files?.[0] : file;
     if (!actualFile) {
       setError("No file selected.");
       setFileInfo(null);
@@ -208,7 +224,8 @@ const App = () => {
           );
 
           parsedData.sort(
-            (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+            (a, b) =>
+              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
           );
 
           if (parsedData.length === 0) {
@@ -234,19 +251,23 @@ const App = () => {
         }
 
         // Update file info with data-specific details
-        setFileInfo((prev) => ({
-          ...prev!,
-          snapshots: parsedData.length,
-          nodes: parsedData[0]?.nodes.length || 0,
-          links: parsedData[0]?.links.length || 0,
-        }));
+        setFileInfo((prev) =>
+          prev
+            ? {
+                ...prev,
+                snapshots: parsedData.length,
+                nodes: parsedData[0]?.nodes.length || 0,
+                links: parsedData[0]?.links.length || 0,
+              }
+            : null
+        );
 
         setSnapshots(parsedData);
         setCurrentIndex(0);
         setIsPlaying(false);
         setError(null);
       } catch (err) {
-        setError("Invalid file format: " + (err as Error).message);
+        setError(`Invalid file format: ${(err as Error).message}`);
         setSnapshots([]);
       }
     };
@@ -263,7 +284,6 @@ const App = () => {
       handleFileUpload(acceptedFiles[0]);
     }
   };
-
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
@@ -469,11 +489,26 @@ const App = () => {
                   </div>
                 )}
               </div>
+
+              {/* Record Button */}
+              {snapshots.length > 1 && (
+                <RecordButton
+                  targetRef={sankeyContainerRef as React.RefObject<HTMLElement>}
+                  isPlaying={isPlaying}
+                  setIsPlaying={setIsPlaying}
+                  resetAnimation={resetAnimation}
+                  duration={calculateAnimationDuration()}
+                  theme={theme}
+                  speedMultiplier={speedMultiplier}
+                />
+              )}
             </div>
           </div>
-          <ErrorBoundary>
-            <SankeyDiagram data={currentSnapshot} />
-          </ErrorBoundary>
+          <div ref={sankeyContainerRef} className="sankey-container">
+            <ErrorBoundary>
+              <SankeyDiagram data={currentSnapshot} />
+            </ErrorBoundary>
+          </div>
           <div className="file-control-row">
             {fileUploadInput}
             {fileInfoPanel}
@@ -484,4 +519,4 @@ const App = () => {
   );
 };
 
-export default App; 
+export default App;

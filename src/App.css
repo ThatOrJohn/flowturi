@@ -502,3 +502,156 @@ body.light .theme-switch .slider:after {
     max-width: 100%;
   }
 }
+
+/* Sankey container styles */
+.sankey-container {
+  margin: 0 auto;
+  max-width: 900px;
+  overflow: visible;
+}
+
+/* Recording controls styles */
+.recording-controls {
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+  position: relative;
+}
+
+.recording-controls svg {
+  margin-right: 4px;
+  display: inline-block;
+}
+
+.recording-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.record-button,
+.stop-button,
+.processing-button,
+.download-button,
+.record-again-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+  transition: background 0.2s;
+  border: none;
+}
+
+.recording-status {
+  position: absolute;
+  bottom: -18px;
+  left: 0;
+  font-size: 0.75em;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.dark .recording-status {
+  color: #aaa;
+}
+
+.recording-progress,
+.processing-progress {
+  font-size: 0.85em;
+  font-weight: bold;
+  margin-right: 4px;
+  min-width: 32px;
+  text-align: center;
+}
+
+.record-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.record-button.dark {
+  background-color: #b71c1c;
+}
+
+.record-button.light {
+  background-color: #f44336;
+}
+
+.record-button:hover {
+  background-color: #d32f2f;
+}
+
+.record-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stop-button {
+  background-color: #f44336;
+  color: white;
+  min-width: 90px;
+}
+
+.stop-button.dark {
+  background-color: #b71c1c;
+}
+
+.stop-button.light {
+  background-color: #f44336;
+}
+
+.stop-button:hover {
+  background-color: #d32f2f;
+}
+
+.processing-button {
+  background-color: #ff9800;
+  color: white;
+  min-width: 140px;
+  cursor: wait;
+}
+
+.processing-button.dark {
+  background-color: #e65100;
+}
+
+.processing-button.light {
+  background-color: #ff9800;
+}
+
+.processing-button:disabled {
+  opacity: 0.9;
+}
+
+.download-button.dark {
+  background-color: #2e7d32;
+  color: white;
+}
+
+.download-button.light {
+  background-color: #4caf50;
+  color: white;
+}
+
+.download-button:hover {
+  opacity: 0.9;
+}
+
+.record-again-button.dark {
+  background-color: #1565c0;
+  color: white;
+}
+
+.record-again-button.light {
+  background-color: #2196f3;
+  color: white;
+}
+
+.record-again-button:hover {
+  opacity: 0.9;
+}
