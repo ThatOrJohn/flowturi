@@ -5,6 +5,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import RecordButton from "./components/RecordButton";
 import Papa from "papaparse";
 import { Snapshot, FileInfo } from "./types";
+import { FrameData } from "./layout/computeLayout";
 import "./App.css";
 
 const THEME_KEY = "flowturi-theme";
@@ -504,9 +505,12 @@ const App = () => {
               )}
             </div>
           </div>
-          <div ref={sankeyContainerRef} className="sankey-container">
+          <div ref={sankeyContainerRef} className={`sankey-container ${theme}`}>
             <ErrorBoundary>
-              <SankeyDiagram data={currentSnapshot} />
+              <SankeyDiagram
+                snapshots={snapshots}
+                currentIndex={currentIndex}
+              />
             </ErrorBoundary>
           </div>
           <div className="file-control-row">

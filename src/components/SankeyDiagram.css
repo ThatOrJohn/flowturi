@@ -1,0 +1,63 @@
+/* SankeyDiagram.css */
+
+.sankey-container {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  margin-top: -20px; /* Move the diagram higher */
+}
+
+.node rect {
+  cursor: pointer;
+  transition: fill 0.2s;
+  shape-rendering: crispEdges;
+  stroke: rgba(0, 0, 0, 0.2);
+  stroke-width: 1px;
+}
+
+.node-label {
+  pointer-events: none;
+  font-weight: 500;
+  user-select: none;
+}
+
+.node-label-background {
+  opacity: 0.7;
+  rx: 3px;
+  ry: 3px;
+}
+
+.link path {
+  cursor: pointer;
+  transition: stroke-opacity 0.2s, stroke-width 0.2s;
+  fill: none;
+}
+
+.link-label {
+  pointer-events: none;
+  font-weight: 500;
+  user-select: none;
+}
+
+.link-label-background {
+  opacity: 0.85;
+  rx: 3px;
+  ry: 3px;
+}
+
+.no-data {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #777;
+  margin-top: 2rem;
+}
+
+.sankey-error {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #d32f2f;
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: rgba(211, 47, 47, 0.1);
+  border-radius: 4px;
+}
