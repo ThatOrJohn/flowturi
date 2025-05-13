@@ -348,35 +348,79 @@ const App = () => {
       <h3>File Information</h3>
       {fileInfo ? (
         <div className="file-stats">
-          <p>
-            <strong>Name:</strong> {fileInfo.name}
-          </p>
-          <p>
-            <strong>Size:</strong> {formatFileSize(fileInfo.size)}
-          </p>
-          <p>
-            <strong>Type:</strong> {fileInfo.type}
-          </p>
-          <p>
-            <strong>Modified:</strong> {fileInfo.lastModified}
-          </p>
+          <div className="file-info-section">
+            <div className="file-info-item file-info-full-width">
+              <strong>Name</strong>
+              <span className="file-info-value file-name-value">
+                {fileInfo.name}
+              </span>
+            </div>
+          </div>
+
+          <div className="file-info-divider"></div>
+
+          <div className="file-info-section">
+            <div className="file-info-row">
+              <div className="file-info-item">
+                <strong>Size</strong>
+                <span className="file-info-value">
+                  {formatFileSize(fileInfo.size)}
+                </span>
+              </div>
+              <div className="file-info-item">
+                <strong>Type</strong>
+                <span className="file-info-value">{fileInfo.type}</span>
+              </div>
+            </div>
+          </div>
+
           {fileInfo.snapshots && (
             <>
-              <p>
-                <strong>Snapshots:</strong> {fileInfo.snapshots}
-              </p>
-              <p>
-                <strong>Nodes:</strong> {fileInfo.nodes}
-              </p>
-              <p>
-                <strong>Links:</strong> {fileInfo.links}
-              </p>
-              {currentSnapshot && (
-                <p>
-                  <strong>Current Frame:</strong> {currentIndex + 1} of{" "}
-                  {snapshots.length}
-                </p>
-              )}
+              <div className="file-info-divider"></div>
+
+              <div className="file-info-section">
+                <div className="file-info-row">
+                  <div className="file-info-item">
+                    <strong>Modified</strong>
+                    <span className="file-info-value file-info-timestamp">
+                      {fileInfo.lastModified}
+                    </span>
+                  </div>
+                  {currentSnapshot && (
+                    <div className="file-info-item current-frame">
+                      <strong>Current Frame</strong>
+                      <span className="file-info-value">
+                        {currentIndex + 1} of {snapshots.length}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="file-info-divider"></div>
+
+              <div className="file-info-section">
+                <div className="file-info-snapshot-stats">
+                  <div className="file-info-snapshot-item">
+                    <strong>Snapshots</strong>
+                    <span className="file-info-value file-info-numeric">
+                      {fileInfo.snapshots}
+                    </span>
+                  </div>
+                  <div className="file-info-snapshot-item">
+                    <strong>Nodes</strong>
+                    <span className="file-info-value file-info-numeric">
+                      {fileInfo.nodes}
+                    </span>
+                  </div>
+                  <div className="file-info-snapshot-item">
+                    <strong>Links</strong>
+                    <span className="file-info-value file-info-numeric">
+                      {fileInfo.links}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </>
           )}
         </div>
