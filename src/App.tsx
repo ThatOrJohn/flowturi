@@ -3,6 +3,7 @@ import { useDropzone } from "react-dropzone";
 import SankeyDiagram from "./components/SankeyDiagram";
 import ErrorBoundary from "./components/ErrorBoundary";
 import RecordButton from "./components/RecordButton";
+import ExportFrameButton from "./components/ExportFrameButton";
 import Papa from "papaparse";
 import { Snapshot, FileInfo } from "./types";
 import { FrameData } from "./layout/computeLayout";
@@ -539,17 +540,38 @@ const App = () => {
                 )}
               </div>
 
-              {/* Record Button */}
-              {snapshots.length > 1 && (
-                <RecordButton
-                  targetRef={sankeyContainerRef as React.RefObject<HTMLElement>}
-                  isPlaying={isPlaying}
-                  setIsPlaying={setIsPlaying}
-                  resetAnimation={resetAnimation}
-                  duration={calculateAnimationDuration()}
-                  theme={theme}
-                  speedMultiplier={speedMultiplier}
-                />
+              {/* Recording Controls */}
+              {snapshots.length > 1 ? (
+                <div className="controls-container">
+                  <RecordButton
+                    targetRef={
+                      sankeyContainerRef as React.RefObject<HTMLElement>
+                    }
+                    isPlaying={isPlaying}
+                    setIsPlaying={setIsPlaying}
+                    resetAnimation={resetAnimation}
+                    duration={calculateAnimationDuration()}
+                    theme={theme}
+                    speedMultiplier={speedMultiplier}
+                  />
+                  <ExportFrameButton
+                    targetRef={
+                      sankeyContainerRef as React.RefObject<HTMLElement>
+                    }
+                    theme={theme}
+                  />
+                </div>
+              ) : (
+                snapshots.length === 1 && (
+                  <div className="controls-container">
+                    <ExportFrameButton
+                      targetRef={
+                        sankeyContainerRef as React.RefObject<HTMLElement>
+                      }
+                      theme={theme}
+                    />
+                  </div>
+                )
               )}
             </div>
           </div>
