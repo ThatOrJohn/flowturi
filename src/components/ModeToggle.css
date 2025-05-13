@@ -1,0 +1,71 @@
+.mode-toggle-container {
+  display: flex;
+  justify-content: center;
+  margin: 0;
+}
+
+.mode-toggle {
+  position: relative;
+  display: flex;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 2px;
+  min-width: 180px;
+}
+
+.dark .mode-toggle {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.mode-toggle-button {
+  flex: 1;
+  padding: 6px 12px;
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+  transition: color 0.3s;
+  color: #333;
+  border-radius: 4px;
+}
+
+.dark .mode-toggle-button {
+  color: #f0f0f0;
+}
+
+.mode-toggle-button.active {
+  color: #fff;
+}
+
+.dark .mode-toggle-button.active {
+  color: #fff;
+}
+
+.mode-toggle-indicator {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  bottom: 2px;
+  width: calc(50% - 2px);
+  background: linear-gradient(135deg, #4a90e2 0%, #2196f3 100%);
+  border-radius: 4px;
+  transition: transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+  z-index: 0;
+}
+
+@media (max-width: 600px) {
+  .mode-toggle {
+    min-width: 160px;
+  }
+
+  .mode-toggle-button {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+}

@@ -1,0 +1,260 @@
+.stream-config-panel {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #ebebeb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  max-width: 400px;
+  overflow: hidden;
+}
+
+.stream-config-panel.dark {
+  background-color: #1e1e1e;
+  border-color: #333;
+  color: #e0e0e0;
+}
+
+.stream-info-panel {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #ebebeb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.stream-info-panel.dark {
+  background-color: #1e1e1e;
+  border-color: #333;
+  color: #e0e0e0;
+}
+
+.stream-config-panel h3,
+.stream-info-panel h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding-bottom: 10px;
+}
+
+.stream-config-panel.dark h3,
+.stream-info-panel.dark h3 {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.stream-config-form {
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.form-group {
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  background-color: #fff;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.form-group input.dark {
+  background-color: #2a2a2a;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.form-group input:disabled {
+  background-color: #f1f1f1;
+  cursor: not-allowed;
+}
+
+.form-group input.dark:disabled {
+  background-color: #333;
+}
+
+.stream-control-buttons {
+  display: flex;
+  margin-top: 12px;
+}
+
+.connect-button,
+.disconnect-button {
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-size: 14px;
+  width: 100%;
+}
+
+.connect-button {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.connect-button:hover {
+  background-color: #3a80d2;
+}
+
+.connect-button:disabled {
+  background-color: #a0c4f1;
+  cursor: not-allowed;
+}
+
+.disconnect-button {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.disconnect-button:hover {
+  background-color: #d73c2c;
+}
+
+.connect-button.dark,
+.disconnect-button.dark {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stream-error-message {
+  padding: 10px;
+  background-color: #ffebee;
+  color: #c62828;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  border-left: 3px solid #e53935;
+}
+
+.stream-status {
+  margin-bottom: 16px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.status-dot.disconnected {
+  background-color: #9e9e9e;
+}
+
+.status-dot.connecting {
+  background-color: #ffc107;
+  animation: pulse 1.5s infinite;
+}
+
+.status-dot.connected {
+  background-color: #4caf50;
+}
+
+.status-dot.error {
+  background-color: #f44336;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
+}
+
+.stream-stats {
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: 8px;
+  padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.stream-stats.dark {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.stream-stat-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.stream-stat-item:last-child {
+  margin-bottom: 0;
+}
+
+.stat-label {
+  font-weight: 500;
+  color: #666;
+  flex-shrink: 0;
+  margin-right: 16px;
+  min-width: 140px;
+}
+
+.stat-value {
+  font-family: monospace;
+  color: #333;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dark .stat-label {
+  color: #aaa;
+}
+
+.dark .stat-value {
+  color: #e0e0e0;
+}
+
+@media (max-width: 768px) {
+  .stream-config-panel,
+  .stream-info-panel {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 10px;
+  }
+}
