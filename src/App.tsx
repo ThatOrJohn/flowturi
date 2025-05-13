@@ -553,15 +553,32 @@ const App = () => {
               )}
             </div>
           </div>
-          <div ref={sankeyContainerRef} className={`sankey-container ${theme}`}>
-            <ErrorBoundary>
-              <SankeyDiagram
-                snapshots={snapshots}
-                currentIndex={currentIndex}
-              />
-            </ErrorBoundary>
+          <div
+            className="sankey-view-container"
+            style={{
+              flex: 1,
+              minHeight: 0,
+              display: "flex",
+              flexDirection: "column",
+              paddingTop: 0,
+              marginTop: 0,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              ref={sankeyContainerRef}
+              className={`sankey-container ${theme}`}
+              style={{ flex: 1 }}
+            >
+              <ErrorBoundary>
+                <SankeyDiagram
+                  snapshots={snapshots}
+                  currentIndex={currentIndex}
+                />
+              </ErrorBoundary>
+            </div>
           </div>
-          <div className="file-control-row">
+          <div className="file-control-row" style={{ marginTop: "5px" }}>
             {fileUploadInput}
             {fileInfoPanel}
           </div>
