@@ -1,0 +1,251 @@
+timestamp,source,target,value
+2025-05-01 00:00:00,Ingress,Edge 1,90.56
+2025-05-01 00:00:00,Ingress,Edge 2,72.28
+2025-05-01 00:00:00,Ingress,Edge 3,12.71
+2025-05-01 00:00:00,Edge 1,Processing A,67.79
+2025-05-01 00:00:00,Edge 2,Processing B,54.33
+2025-05-01 00:00:00,Edge 3,Processing C,80.54
+2025-05-01 00:00:00,Processing A,Aggregation,56.54
+2025-05-01 00:00:00,Processing B,Aggregation,80.04
+2025-05-01 00:00:00,Processing C,Aggregation,40.08
+2025-05-01 00:00:00,Aggregation,Storage,19.45
+2025-05-01 01:00:00,Ingress,Edge 1,74.27
+2025-05-01 01:00:00,Ingress,Edge 2,9.56
+2025-05-01 01:00:00,Ingress,Edge 3,9.75
+2025-05-01 01:00:00,Edge 1,Processing A,17.14
+2025-05-01 01:00:00,Edge 2,Processing B,84.47
+2025-05-01 01:00:00,Edge 3,Processing C,52.96
+2025-05-01 01:00:00,Processing A,Aggregation,85.25
+2025-05-01 01:00:00,Processing B,Aggregation,5.57
+2025-05-01 01:00:00,Processing C,Aggregation,78.81
+2025-05-01 01:00:00,Aggregation,Storage,41.6
+2025-05-01 02:00:00,Ingress,Edge 1,78.0
+2025-05-01 02:00:00,Ingress,Edge 2,43.02
+2025-05-01 02:00:00,Ingress,Edge 3,97.17
+2025-05-01 02:00:00,Edge 1,Processing A,8.53
+2025-05-01 02:00:00,Edge 2,Processing B,14.24
+2025-05-01 02:00:00,Edge 3,Processing C,39.85
+2025-05-01 02:00:00,Processing A,Aggregation,83.75
+2025-05-01 02:00:00,Processing B,Aggregation,65.8
+2025-05-01 02:00:00,Processing C,Aggregation,44.72
+2025-05-01 02:00:00,Aggregation,Storage,46.0
+2025-05-01 03:00:00,Ingress,Edge 1,35.48
+2025-05-01 03:00:00,Ingress,Edge 2,28.79
+2025-05-01 03:00:00,Ingress,Edge 3,86.4
+2025-05-01 03:00:00,Edge 1,Processing A,21.74
+2025-05-01 03:00:00,Edge 2,Processing B,8.26
+2025-05-01 03:00:00,Edge 3,Processing C,37.87
+2025-05-01 03:00:00,Processing A,Aggregation,42.24
+2025-05-01 03:00:00,Processing B,Aggregation,51.02
+2025-05-01 03:00:00,Processing C,Aggregation,39.22
+2025-05-01 03:00:00,Aggregation,Storage,96.39
+2025-05-01 04:00:00,Ingress,Edge 1,64.78
+2025-05-01 04:00:00,Ingress,Edge 2,50.42
+2025-05-01 04:00:00,Ingress,Edge 3,49.62
+2025-05-01 04:00:00,Edge 1,Processing A,20.48
+2025-05-01 04:00:00,Edge 2,Processing B,99.42
+2025-05-01 04:00:00,Edge 3,Processing C,53.42
+2025-05-01 04:00:00,Processing A,Aggregation,61.31
+2025-05-01 04:00:00,Processing B,Aggregation,15.21
+2025-05-01 04:00:00,Processing C,Aggregation,54.56
+2025-05-01 04:00:00,Aggregation,Storage,89.08
+2025-05-01 05:00:00,Ingress,Edge 1,52.0
+2025-05-01 05:00:00,Ingress,Edge 2,91.23
+2025-05-01 05:00:00,Ingress,Edge 3,13.24
+2025-05-01 05:00:00,Edge 1,Processing A,44.54
+2025-05-01 05:00:00,Edge 2,Processing B,43.69
+2025-05-01 05:00:00,Edge 3,Processing C,8.54
+2025-05-01 05:00:00,Processing A,Aggregation,78.2
+2025-05-01 05:00:00,Processing B,Aggregation,6.94
+2025-05-01 05:00:00,Processing C,Aggregation,60.52
+2025-05-01 05:00:00,Aggregation,Storage,54.34
+2025-05-01 06:00:00,Ingress,Edge 1,70.49
+2025-05-01 06:00:00,Ingress,Edge 2,36.16
+2025-05-01 06:00:00,Ingress,Edge 3,78.04
+2025-05-01 06:00:00,Edge 1,Processing A,47.31
+2025-05-01 06:00:00,Edge 2,Processing B,87.54
+2025-05-01 06:00:00,Edge 3,Processing C,86.98
+2025-05-01 06:00:00,Processing A,Aggregation,34.4
+2025-05-01 06:00:00,Processing B,Aggregation,37.52
+2025-05-01 06:00:00,Processing C,Aggregation,85.8
+2025-05-01 06:00:00,Aggregation,Storage,81.5
+2025-05-01 07:00:00,Ingress,Edge 1,90.59
+2025-05-01 07:00:00,Ingress,Edge 2,32.79
+2025-05-01 07:00:00,Ingress,Edge 3,34.68
+2025-05-01 07:00:00,Edge 1,Processing A,56.73
+2025-05-01 07:00:00,Edge 2,Processing B,84.27
+2025-05-01 07:00:00,Edge 3,Processing C,68.57
+2025-05-01 07:00:00,Processing A,Aggregation,55.45
+2025-05-01 07:00:00,Processing B,Aggregation,78.18
+2025-05-01 07:00:00,Processing C,Aggregation,9.38
+2025-05-01 07:00:00,Aggregation,Storage,11.35
+2025-05-01 08:00:00,Ingress,Edge 1,80.61
+2025-05-01 08:00:00,Ingress,Edge 2,46.95
+2025-05-01 08:00:00,Ingress,Edge 3,95.83
+2025-05-01 08:00:00,Edge 1,Processing A,7.72
+2025-05-01 08:00:00,Edge 2,Processing B,45.08
+2025-05-01 08:00:00,Edge 3,Processing C,19.46
+2025-05-01 08:00:00,Processing A,Aggregation,77.77
+2025-05-01 08:00:00,Processing B,Aggregation,53.63
+2025-05-01 08:00:00,Processing C,Aggregation,41.92
+2025-05-01 08:00:00,Aggregation,Storage,14.27
+2025-05-01 09:00:00,Ingress,Edge 1,77.82
+2025-05-01 09:00:00,Ingress,Edge 2,77.66
+2025-05-01 09:00:00,Ingress,Edge 3,33.74
+2025-05-01 09:00:00,Edge 1,Processing A,83.29
+2025-05-01 09:00:00,Edge 2,Processing B,29.35
+2025-05-01 09:00:00,Edge 3,Processing C,52.77
+2025-05-01 09:00:00,Processing A,Aggregation,49.87
+2025-05-01 09:00:00,Processing B,Aggregation,70.3
+2025-05-01 09:00:00,Processing C,Aggregation,15.83
+2025-05-01 09:00:00,Aggregation,Storage,22.27
+2025-05-01 10:00:00,Ingress,Edge 1,18.91
+2025-05-01 10:00:00,Ingress,Edge 2,92.37
+2025-05-01 10:00:00,Ingress,Edge 3,45.57
+2025-05-01 10:00:00,Edge 1,Processing A,54.66
+2025-05-01 10:00:00,Edge 2,Processing B,57.67
+2025-05-01 10:00:00,Edge 3,Processing C,9.65
+2025-05-01 10:00:00,Processing A,Aggregation,53.47
+2025-05-01 10:00:00,Processing B,Aggregation,42.82
+2025-05-01 10:00:00,Processing C,Aggregation,33.02
+2025-05-01 10:00:00,Aggregation,Storage,67.63
+2025-05-01 11:00:00,Ingress,Edge 1,94.4
+2025-05-01 11:00:00,Ingress,Edge 2,29.57
+2025-05-01 11:00:00,Ingress,Edge 3,30.19
+2025-05-01 11:00:00,Edge 1,Processing A,66.11
+2025-05-01 11:00:00,Edge 2,Processing B,73.67
+2025-05-01 11:00:00,Edge 3,Processing C,52.32
+2025-05-01 11:00:00,Processing A,Aggregation,40.04
+2025-05-01 11:00:00,Processing B,Aggregation,19.75
+2025-05-01 11:00:00,Processing C,Aggregation,14.72
+2025-05-01 11:00:00,Aggregation,Storage,39.9
+2025-05-01 12:00:00,Ingress,Edge 1,93.03
+2025-05-01 12:00:00,Ingress,Edge 2,19.6
+2025-05-01 12:00:00,Ingress,Edge 3,22.19
+2025-05-01 12:00:00,Edge 1,Processing A,38.68
+2025-05-01 12:00:00,Edge 2,Processing B,14.16
+2025-05-01 12:00:00,Edge 3,Processing C,38.86
+2025-05-01 12:00:00,Processing A,Aggregation,14.71
+2025-05-01 12:00:00,Processing B,Aggregation,92.59
+2025-05-01 12:00:00,Processing C,Aggregation,38.58
+2025-05-01 12:00:00,Aggregation,Storage,17.1
+2025-05-01 13:00:00,Ingress,Edge 1,66.54
+2025-05-01 13:00:00,Ingress,Edge 2,34.34
+2025-05-01 13:00:00,Ingress,Edge 3,30.75
+2025-05-01 13:00:00,Edge 1,Processing A,16.37
+2025-05-01 13:00:00,Edge 2,Processing B,44.66
+2025-05-01 13:00:00,Edge 3,Processing C,78.63
+2025-05-01 13:00:00,Processing A,Aggregation,80.83
+2025-05-01 13:00:00,Processing B,Aggregation,63.89
+2025-05-01 13:00:00,Processing C,Aggregation,74.35
+2025-05-01 13:00:00,Aggregation,Storage,56.75
+2025-05-01 14:00:00,Ingress,Edge 1,70.85
+2025-05-01 14:00:00,Ingress,Edge 2,36.89
+2025-05-01 14:00:00,Ingress,Edge 3,84.59
+2025-05-01 14:00:00,Edge 1,Processing A,52.84
+2025-05-01 14:00:00,Edge 2,Processing B,76.04
+2025-05-01 14:00:00,Edge 3,Processing C,12.21
+2025-05-01 14:00:00,Processing A,Aggregation,7.34
+2025-05-01 14:00:00,Processing B,Aggregation,69.9
+2025-05-01 14:00:00,Processing C,Aggregation,78.84
+2025-05-01 14:00:00,Aggregation,Storage,59.06
+2025-05-01 15:00:00,Ingress,Edge 1,74.3
+2025-05-01 15:00:00,Ingress,Edge 2,93.72
+2025-05-01 15:00:00,Ingress,Edge 3,36.92
+2025-05-01 15:00:00,Edge 1,Processing A,27.63
+2025-05-01 15:00:00,Edge 2,Processing B,32.95
+2025-05-01 15:00:00,Edge 3,Processing C,76.81
+2025-05-01 15:00:00,Processing A,Aggregation,74.72
+2025-05-01 15:00:00,Processing B,Aggregation,30.99
+2025-05-01 15:00:00,Processing C,Aggregation,77.31
+2025-05-01 15:00:00,Aggregation,Storage,21.51
+2025-05-01 16:00:00,Ingress,Edge 1,22.75
+2025-05-01 16:00:00,Ingress,Edge 2,90.25
+2025-05-01 16:00:00,Ingress,Edge 3,93.1
+2025-05-01 16:00:00,Edge 1,Processing A,33.88
+2025-05-01 16:00:00,Edge 2,Processing B,48.24
+2025-05-01 16:00:00,Edge 3,Processing C,69.86
+2025-05-01 16:00:00,Processing A,Aggregation,44.91
+2025-05-01 16:00:00,Processing B,Aggregation,63.36
+2025-05-01 16:00:00,Processing C,Aggregation,46.7
+2025-05-01 16:00:00,Aggregation,Storage,83.62
+2025-05-01 17:00:00,Ingress,Edge 1,43.02
+2025-05-01 17:00:00,Ingress,Edge 2,73.14
+2025-05-01 17:00:00,Ingress,Edge 3,60.15
+2025-05-01 17:00:00,Edge 1,Processing A,27.91
+2025-05-01 17:00:00,Edge 2,Processing B,87.81
+2025-05-01 17:00:00,Edge 3,Processing C,56.72
+2025-05-01 17:00:00,Processing A,Aggregation,25.49
+2025-05-01 17:00:00,Processing B,Aggregation,52.9
+2025-05-01 17:00:00,Processing C,Aggregation,58.3
+2025-05-01 17:00:00,Aggregation,Storage,77.85
+2025-05-01 18:00:00,Ingress,Edge 1,47.64
+2025-05-01 18:00:00,Ingress,Edge 2,86.41
+2025-05-01 18:00:00,Ingress,Edge 3,15.09
+2025-05-01 18:00:00,Edge 1,Processing A,94.34
+2025-05-01 18:00:00,Edge 2,Processing B,80.21
+2025-05-01 18:00:00,Edge 3,Processing C,81.18
+2025-05-01 18:00:00,Processing A,Aggregation,49.28
+2025-05-01 18:00:00,Processing B,Aggregation,14.32
+2025-05-01 18:00:00,Processing C,Aggregation,88.05
+2025-05-01 18:00:00,Aggregation,Storage,26.8
+2025-05-01 19:00:00,Ingress,Edge 1,72.13
+2025-05-01 19:00:00,Ingress,Edge 2,52.73
+2025-05-01 19:00:00,Ingress,Edge 3,89.61
+2025-05-01 19:00:00,Edge 1,Processing A,90.74
+2025-05-01 19:00:00,Edge 2,Processing B,51.58
+2025-05-01 19:00:00,Edge 3,Processing C,42.94
+2025-05-01 19:00:00,Processing A,Aggregation,7.78
+2025-05-01 19:00:00,Processing B,Aggregation,12.86
+2025-05-01 19:00:00,Processing C,Aggregation,25.39
+2025-05-01 19:00:00,Aggregation,Storage,27.71
+2025-05-01 20:00:00,Ingress,Edge 1,42.22
+2025-05-01 20:00:00,Ingress,Edge 2,68.04
+2025-05-01 20:00:00,Ingress,Edge 3,86.68
+2025-05-01 20:00:00,Edge 1,Processing A,30.88
+2025-05-01 20:00:00,Edge 2,Processing B,82.06
+2025-05-01 20:00:00,Edge 3,Processing C,9.95
+2025-05-01 20:00:00,Processing A,Aggregation,62.09
+2025-05-01 20:00:00,Processing B,Aggregation,68.6
+2025-05-01 20:00:00,Processing C,Aggregation,57.04
+2025-05-01 20:00:00,Aggregation,Storage,91.6
+2025-05-01 21:00:00,Ingress,Edge 1,96.29
+2025-05-01 21:00:00,Ingress,Edge 2,23.62
+2025-05-01 21:00:00,Ingress,Edge 3,12.52
+2025-05-01 21:00:00,Edge 1,Processing A,34.9
+2025-05-01 21:00:00,Edge 2,Processing B,79.02
+2025-05-01 21:00:00,Edge 3,Processing C,93.52
+2025-05-01 21:00:00,Processing A,Aggregation,88.59
+2025-05-01 21:00:00,Processing B,Aggregation,79.04
+2025-05-01 21:00:00,Processing C,Aggregation,90.33
+2025-05-01 21:00:00,Aggregation,Storage,70.3
+2025-05-01 22:00:00,Ingress,Edge 1,39.99
+2025-05-01 22:00:00,Ingress,Edge 2,55.42
+2025-05-01 22:00:00,Ingress,Edge 3,70.99
+2025-05-01 22:00:00,Edge 1,Processing A,6.33
+2025-05-01 22:00:00,Edge 2,Processing B,39.47
+2025-05-01 22:00:00,Edge 3,Processing C,36.87
+2025-05-01 22:00:00,Processing A,Aggregation,98.6
+2025-05-01 22:00:00,Processing B,Aggregation,95.85
+2025-05-01 22:00:00,Processing C,Aggregation,48.68
+2025-05-01 22:00:00,Aggregation,Storage,15.45
+2025-05-01 23:00:00,Ingress,Edge 1,54.76
+2025-05-01 23:00:00,Ingress,Edge 2,5.87
+2025-05-01 23:00:00,Ingress,Edge 3,17.39
+2025-05-01 23:00:00,Edge 1,Processing A,34.12
+2025-05-01 23:00:00,Edge 2,Processing B,36.46
+2025-05-01 23:00:00,Edge 3,Processing C,81.88
+2025-05-01 23:00:00,Processing A,Aggregation,58.8
+2025-05-01 23:00:00,Processing B,Aggregation,46.86
+2025-05-01 23:00:00,Processing C,Aggregation,78.5
+2025-05-01 23:00:00,Aggregation,Storage,45.74
+2025-05-02 00:00:00,Ingress,Edge 1,74.26
+2025-05-02 00:00:00,Ingress,Edge 2,48.86
+2025-05-02 00:00:00,Ingress,Edge 3,91.7
+2025-05-02 00:00:00,Edge 1,Processing A,79.87
+2025-05-02 00:00:00,Edge 2,Processing B,44.22
+2025-05-02 00:00:00,Edge 3,Processing C,11.7
+2025-05-02 00:00:00,Processing A,Aggregation,52.56
+2025-05-02 00:00:00,Processing B,Aggregation,61.91
+2025-05-02 00:00:00,Processing C,Aggregation,73.77
+2025-05-02 00:00:00,Aggregation,Storage,11.17

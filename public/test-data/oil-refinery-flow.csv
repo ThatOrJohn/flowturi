@@ -1,0 +1,451 @@
+timestamp,source,target,value
+2025-05-10 00:00:00,Crude Tank,Desalter,456.7
+2025-05-10 00:00:00,Desalter,Heater,277.04
+2025-05-10 00:00:00,Heater,Distillation Column,209.76
+2025-05-10 00:00:00,Distillation Column,Naptha Splitter,205.65
+2025-05-10 00:00:00,Distillation Column,Kerosene Unit,477.34
+2025-05-10 00:00:00,Distillation Column,Diesel Hydrotreater,85.44
+2025-05-10 00:00:00,Naptha Splitter,Product Tank,292.8
+2025-05-10 00:00:00,Kerosene Unit,Product Tank,171.14
+2025-05-10 00:00:00,Diesel Hydrotreater,Product Tank,302.82
+2025-05-10 01:00:00,Crude Tank,Desalter,263.47
+2025-05-10 01:00:00,Desalter,Heater,404.95
+2025-05-10 01:00:00,Heater,Distillation Column,490.39
+2025-05-10 01:00:00,Distillation Column,Naptha Splitter,140.88
+2025-05-10 01:00:00,Distillation Column,Kerosene Unit,375.27
+2025-05-10 01:00:00,Distillation Column,Diesel Hydrotreater,325.71
+2025-05-10 01:00:00,Naptha Splitter,Product Tank,352.22
+2025-05-10 01:00:00,Kerosene Unit,Product Tank,168.09
+2025-05-10 01:00:00,Diesel Hydrotreater,Product Tank,84.52
+2025-05-10 02:00:00,Crude Tank,Desalter,479.97
+2025-05-10 02:00:00,Desalter,Heater,104.96
+2025-05-10 02:00:00,Heater,Distillation Column,131.18
+2025-05-10 02:00:00,Distillation Column,Naptha Splitter,297.61
+2025-05-10 02:00:00,Distillation Column,Kerosene Unit,309.4
+2025-05-10 02:00:00,Distillation Column,Diesel Hydrotreater,148.82
+2025-05-10 02:00:00,Naptha Splitter,Product Tank,311.37
+2025-05-10 02:00:00,Kerosene Unit,Product Tank,330.88
+2025-05-10 02:00:00,Diesel Hydrotreater,Product Tank,453.23
+2025-05-10 03:00:00,Crude Tank,Desalter,382.81
+2025-05-10 03:00:00,Desalter,Heater,184.73
+2025-05-10 03:00:00,Heater,Distillation Column,342.98
+2025-05-10 03:00:00,Distillation Column,Naptha Splitter,54.29
+2025-05-10 03:00:00,Distillation Column,Kerosene Unit,257.83
+2025-05-10 03:00:00,Distillation Column,Diesel Hydrotreater,233.48
+2025-05-10 03:00:00,Naptha Splitter,Product Tank,484.62
+2025-05-10 03:00:00,Kerosene Unit,Product Tank,274.18
+2025-05-10 03:00:00,Diesel Hydrotreater,Product Tank,176.86
+2025-05-10 04:00:00,Crude Tank,Desalter,147.53
+2025-05-10 04:00:00,Desalter,Heater,114.12
+2025-05-10 04:00:00,Heater,Distillation Column,353.69
+2025-05-10 04:00:00,Distillation Column,Naptha Splitter,186.55
+2025-05-10 04:00:00,Distillation Column,Kerosene Unit,455.86
+2025-05-10 04:00:00,Distillation Column,Diesel Hydrotreater,377.05
+2025-05-10 04:00:00,Naptha Splitter,Product Tank,490.12
+2025-05-10 04:00:00,Kerosene Unit,Product Tank,383.16
+2025-05-10 04:00:00,Diesel Hydrotreater,Product Tank,93.35
+2025-05-10 05:00:00,Crude Tank,Desalter,383.16
+2025-05-10 05:00:00,Desalter,Heater,148.03
+2025-05-10 05:00:00,Heater,Distillation Column,349.93
+2025-05-10 05:00:00,Distillation Column,Naptha Splitter,246.25
+2025-05-10 05:00:00,Distillation Column,Kerosene Unit,232.27
+2025-05-10 05:00:00,Distillation Column,Diesel Hydrotreater,393.84
+2025-05-10 05:00:00,Naptha Splitter,Product Tank,147.02
+2025-05-10 05:00:00,Kerosene Unit,Product Tank,149.26
+2025-05-10 05:00:00,Diesel Hydrotreater,Product Tank,190.77
+2025-05-10 06:00:00,Crude Tank,Desalter,354.05
+2025-05-10 06:00:00,Desalter,Heater,261.04
+2025-05-10 06:00:00,Heater,Distillation Column,371.84
+2025-05-10 06:00:00,Distillation Column,Naptha Splitter,251.03
+2025-05-10 06:00:00,Distillation Column,Kerosene Unit,189.27
+2025-05-10 06:00:00,Distillation Column,Diesel Hydrotreater,412.51
+2025-05-10 06:00:00,Naptha Splitter,Product Tank,362.91
+2025-05-10 06:00:00,Kerosene Unit,Product Tank,436.71
+2025-05-10 06:00:00,Diesel Hydrotreater,Product Tank,194.88
+2025-05-10 07:00:00,Crude Tank,Desalter,411.29
+2025-05-10 07:00:00,Desalter,Heater,232.01
+2025-05-10 07:00:00,Heater,Distillation Column,52.04
+2025-05-10 07:00:00,Distillation Column,Naptha Splitter,78.31
+2025-05-10 07:00:00,Distillation Column,Kerosene Unit,397.61
+2025-05-10 07:00:00,Distillation Column,Diesel Hydrotreater,429.14
+2025-05-10 07:00:00,Naptha Splitter,Product Tank,306.49
+2025-05-10 07:00:00,Kerosene Unit,Product Tank,248.18
+2025-05-10 07:00:00,Diesel Hydrotreater,Product Tank,51.19
+2025-05-10 08:00:00,Crude Tank,Desalter,287.73
+2025-05-10 08:00:00,Desalter,Heater,183.67
+2025-05-10 08:00:00,Heater,Distillation Column,371.88
+2025-05-10 08:00:00,Distillation Column,Naptha Splitter,223.21
+2025-05-10 08:00:00,Distillation Column,Kerosene Unit,407.59
+2025-05-10 08:00:00,Distillation Column,Diesel Hydrotreater,317.11
+2025-05-10 08:00:00,Naptha Splitter,Product Tank,499.4
+2025-05-10 08:00:00,Kerosene Unit,Product Tank,173.31
+2025-05-10 08:00:00,Diesel Hydrotreater,Product Tank,86.39
+2025-05-10 09:00:00,Crude Tank,Desalter,94.94
+2025-05-10 09:00:00,Desalter,Heater,71.08
+2025-05-10 09:00:00,Heater,Distillation Column,335.32
+2025-05-10 09:00:00,Distillation Column,Naptha Splitter,96.4
+2025-05-10 09:00:00,Distillation Column,Kerosene Unit,426.61
+2025-05-10 09:00:00,Distillation Column,Diesel Hydrotreater,332.63
+2025-05-10 09:00:00,Naptha Splitter,Product Tank,418.21
+2025-05-10 09:00:00,Kerosene Unit,Product Tank,254.0
+2025-05-10 09:00:00,Diesel Hydrotreater,Product Tank,401.07
+2025-05-10 10:00:00,Crude Tank,Desalter,175.74
+2025-05-10 10:00:00,Desalter,Heater,236.78
+2025-05-10 10:00:00,Heater,Distillation Column,480.54
+2025-05-10 10:00:00,Distillation Column,Naptha Splitter,106.44
+2025-05-10 10:00:00,Distillation Column,Kerosene Unit,355.94
+2025-05-10 10:00:00,Distillation Column,Diesel Hydrotreater,198.24
+2025-05-10 10:00:00,Naptha Splitter,Product Tank,276.29
+2025-05-10 10:00:00,Kerosene Unit,Product Tank,333.0
+2025-05-10 10:00:00,Diesel Hydrotreater,Product Tank,149.84
+2025-05-10 11:00:00,Crude Tank,Desalter,425.83
+2025-05-10 11:00:00,Desalter,Heater,426.35
+2025-05-10 11:00:00,Heater,Distillation Column,224.91
+2025-05-10 11:00:00,Distillation Column,Naptha Splitter,152.3
+2025-05-10 11:00:00,Distillation Column,Kerosene Unit,226.3
+2025-05-10 11:00:00,Distillation Column,Diesel Hydrotreater,142.2
+2025-05-10 11:00:00,Naptha Splitter,Product Tank,122.83
+2025-05-10 11:00:00,Kerosene Unit,Product Tank,173.04
+2025-05-10 11:00:00,Diesel Hydrotreater,Product Tank,423.29
+2025-05-10 12:00:00,Crude Tank,Desalter,451.76
+2025-05-10 12:00:00,Desalter,Heater,143.33
+2025-05-10 12:00:00,Heater,Distillation Column,157.69
+2025-05-10 12:00:00,Distillation Column,Naptha Splitter,438.89
+2025-05-10 12:00:00,Distillation Column,Kerosene Unit,404.88
+2025-05-10 12:00:00,Distillation Column,Diesel Hydrotreater,452.53
+2025-05-10 12:00:00,Naptha Splitter,Product Tank,132.72
+2025-05-10 12:00:00,Kerosene Unit,Product Tank,152.12
+2025-05-10 12:00:00,Diesel Hydrotreater,Product Tank,269.01
+2025-05-10 13:00:00,Crude Tank,Desalter,482.83
+2025-05-10 13:00:00,Desalter,Heater,438.41
+2025-05-10 13:00:00,Heater,Distillation Column,314.71
+2025-05-10 13:00:00,Distillation Column,Naptha Splitter,98.49
+2025-05-10 13:00:00,Distillation Column,Kerosene Unit,246.71
+2025-05-10 13:00:00,Distillation Column,Diesel Hydrotreater,372.14
+2025-05-10 13:00:00,Naptha Splitter,Product Tank,416.74
+2025-05-10 13:00:00,Kerosene Unit,Product Tank,333.23
+2025-05-10 13:00:00,Diesel Hydrotreater,Product Tank,352.41
+2025-05-10 14:00:00,Crude Tank,Desalter,131.61
+2025-05-10 14:00:00,Desalter,Heater,339.32
+2025-05-10 14:00:00,Heater,Distillation Column,231.13
+2025-05-10 14:00:00,Distillation Column,Naptha Splitter,376.93
+2025-05-10 14:00:00,Distillation Column,Kerosene Unit,289.72
+2025-05-10 14:00:00,Distillation Column,Diesel Hydrotreater,468.79
+2025-05-10 14:00:00,Naptha Splitter,Product Tank,318.22
+2025-05-10 14:00:00,Kerosene Unit,Product Tank,415.28
+2025-05-10 14:00:00,Diesel Hydrotreater,Product Tank,353.59
+2025-05-10 15:00:00,Crude Tank,Desalter,284.34
+2025-05-10 15:00:00,Desalter,Heater,238.54
+2025-05-10 15:00:00,Heater,Distillation Column,207.59
+2025-05-10 15:00:00,Distillation Column,Naptha Splitter,499.46
+2025-05-10 15:00:00,Distillation Column,Kerosene Unit,216.61
+2025-05-10 15:00:00,Distillation Column,Diesel Hydrotreater,77.0
+2025-05-10 15:00:00,Naptha Splitter,Product Tank,277.9
+2025-05-10 15:00:00,Kerosene Unit,Product Tank,173.76
+2025-05-10 15:00:00,Diesel Hydrotreater,Product Tank,336.49
+2025-05-10 16:00:00,Crude Tank,Desalter,283.14
+2025-05-10 16:00:00,Desalter,Heater,339.06
+2025-05-10 16:00:00,Heater,Distillation Column,419.61
+2025-05-10 16:00:00,Distillation Column,Naptha Splitter,486.55
+2025-05-10 16:00:00,Distillation Column,Kerosene Unit,239.61
+2025-05-10 16:00:00,Distillation Column,Diesel Hydrotreater,438.58
+2025-05-10 16:00:00,Naptha Splitter,Product Tank,417.73
+2025-05-10 16:00:00,Kerosene Unit,Product Tank,361.69
+2025-05-10 16:00:00,Diesel Hydrotreater,Product Tank,371.33
+2025-05-10 17:00:00,Crude Tank,Desalter,471.42
+2025-05-10 17:00:00,Desalter,Heater,159.58
+2025-05-10 17:00:00,Heater,Distillation Column,416.89
+2025-05-10 17:00:00,Distillation Column,Naptha Splitter,88.08
+2025-05-10 17:00:00,Distillation Column,Kerosene Unit,301.85
+2025-05-10 17:00:00,Distillation Column,Diesel Hydrotreater,275.05
+2025-05-10 17:00:00,Naptha Splitter,Product Tank,198.89
+2025-05-10 17:00:00,Kerosene Unit,Product Tank,118.38
+2025-05-10 17:00:00,Diesel Hydrotreater,Product Tank,421.65
+2025-05-10 18:00:00,Crude Tank,Desalter,106.03
+2025-05-10 18:00:00,Desalter,Heater,232.42
+2025-05-10 18:00:00,Heater,Distillation Column,75.02
+2025-05-10 18:00:00,Distillation Column,Naptha Splitter,382.05
+2025-05-10 18:00:00,Distillation Column,Kerosene Unit,389.33
+2025-05-10 18:00:00,Distillation Column,Diesel Hydrotreater,302.33
+2025-05-10 18:00:00,Naptha Splitter,Product Tank,53.91
+2025-05-10 18:00:00,Kerosene Unit,Product Tank,357.21
+2025-05-10 18:00:00,Diesel Hydrotreater,Product Tank,114.58
+2025-05-10 19:00:00,Crude Tank,Desalter,359.41
+2025-05-10 19:00:00,Desalter,Heater,312.0
+2025-05-10 19:00:00,Heater,Distillation Column,175.35
+2025-05-10 19:00:00,Distillation Column,Naptha Splitter,344.95
+2025-05-10 19:00:00,Distillation Column,Kerosene Unit,68.04
+2025-05-10 19:00:00,Distillation Column,Diesel Hydrotreater,366.4
+2025-05-10 19:00:00,Naptha Splitter,Product Tank,395.93
+2025-05-10 19:00:00,Kerosene Unit,Product Tank,375.27
+2025-05-10 19:00:00,Diesel Hydrotreater,Product Tank,470.48
+2025-05-10 20:00:00,Crude Tank,Desalter,327.24
+2025-05-10 20:00:00,Desalter,Heater,94.98
+2025-05-10 20:00:00,Heater,Distillation Column,462.6
+2025-05-10 20:00:00,Distillation Column,Naptha Splitter,274.58
+2025-05-10 20:00:00,Distillation Column,Kerosene Unit,475.46
+2025-05-10 20:00:00,Distillation Column,Diesel Hydrotreater,211.9
+2025-05-10 20:00:00,Naptha Splitter,Product Tank,62.7
+2025-05-10 20:00:00,Kerosene Unit,Product Tank,192.03
+2025-05-10 20:00:00,Diesel Hydrotreater,Product Tank,220.73
+2025-05-10 21:00:00,Crude Tank,Desalter,253.29
+2025-05-10 21:00:00,Desalter,Heater,291.99
+2025-05-10 21:00:00,Heater,Distillation Column,79.7
+2025-05-10 21:00:00,Distillation Column,Naptha Splitter,79.32
+2025-05-10 21:00:00,Distillation Column,Kerosene Unit,228.6
+2025-05-10 21:00:00,Distillation Column,Diesel Hydrotreater,476.78
+2025-05-10 21:00:00,Naptha Splitter,Product Tank,192.08
+2025-05-10 21:00:00,Kerosene Unit,Product Tank,437.21
+2025-05-10 21:00:00,Diesel Hydrotreater,Product Tank,182.19
+2025-05-10 22:00:00,Crude Tank,Desalter,412.74
+2025-05-10 22:00:00,Desalter,Heater,482.04
+2025-05-10 22:00:00,Heater,Distillation Column,389.41
+2025-05-10 22:00:00,Distillation Column,Naptha Splitter,336.27
+2025-05-10 22:00:00,Distillation Column,Kerosene Unit,87.12
+2025-05-10 22:00:00,Distillation Column,Diesel Hydrotreater,403.06
+2025-05-10 22:00:00,Naptha Splitter,Product Tank,330.59
+2025-05-10 22:00:00,Kerosene Unit,Product Tank,440.2
+2025-05-10 22:00:00,Diesel Hydrotreater,Product Tank,108.18
+2025-05-10 23:00:00,Crude Tank,Desalter,281.53
+2025-05-10 23:00:00,Desalter,Heater,171.63
+2025-05-10 23:00:00,Heater,Distillation Column,464.37
+2025-05-10 23:00:00,Distillation Column,Naptha Splitter,273.45
+2025-05-10 23:00:00,Distillation Column,Kerosene Unit,399.67
+2025-05-10 23:00:00,Distillation Column,Diesel Hydrotreater,198.74
+2025-05-10 23:00:00,Naptha Splitter,Product Tank,462.27
+2025-05-10 23:00:00,Kerosene Unit,Product Tank,118.47
+2025-05-10 23:00:00,Diesel Hydrotreater,Product Tank,149.9
+2025-05-11 00:00:00,Crude Tank,Desalter,484.27
+2025-05-11 00:00:00,Desalter,Heater,494.39
+2025-05-11 00:00:00,Heater,Distillation Column,94.88
+2025-05-11 00:00:00,Distillation Column,Naptha Splitter,484.44
+2025-05-11 00:00:00,Distillation Column,Kerosene Unit,289.19
+2025-05-11 00:00:00,Distillation Column,Diesel Hydrotreater,149.44
+2025-05-11 00:00:00,Naptha Splitter,Product Tank,254.81
+2025-05-11 00:00:00,Kerosene Unit,Product Tank,330.19
+2025-05-11 00:00:00,Diesel Hydrotreater,Product Tank,135.92
+2025-05-11 01:00:00,Crude Tank,Desalter,228.1
+2025-05-11 01:00:00,Desalter,Heater,413.61
+2025-05-11 01:00:00,Heater,Distillation Column,105.71
+2025-05-11 01:00:00,Distillation Column,Naptha Splitter,243.66
+2025-05-11 01:00:00,Distillation Column,Kerosene Unit,446.19
+2025-05-11 01:00:00,Distillation Column,Diesel Hydrotreater,470.34
+2025-05-11 01:00:00,Naptha Splitter,Product Tank,81.27
+2025-05-11 01:00:00,Kerosene Unit,Product Tank,259.35
+2025-05-11 01:00:00,Diesel Hydrotreater,Product Tank,116.5
+2025-05-11 02:00:00,Crude Tank,Desalter,114.99
+2025-05-11 02:00:00,Desalter,Heater,172.45
+2025-05-11 02:00:00,Heater,Distillation Column,51.65
+2025-05-11 02:00:00,Distillation Column,Naptha Splitter,145.66
+2025-05-11 02:00:00,Distillation Column,Kerosene Unit,74.1
+2025-05-11 02:00:00,Distillation Column,Diesel Hydrotreater,294.65
+2025-05-11 02:00:00,Naptha Splitter,Product Tank,325.71
+2025-05-11 02:00:00,Kerosene Unit,Product Tank,418.28
+2025-05-11 02:00:00,Diesel Hydrotreater,Product Tank,176.41
+2025-05-11 03:00:00,Crude Tank,Desalter,99.19
+2025-05-11 03:00:00,Desalter,Heater,426.35
+2025-05-11 03:00:00,Heater,Distillation Column,381.06
+2025-05-11 03:00:00,Distillation Column,Naptha Splitter,316.95
+2025-05-11 03:00:00,Distillation Column,Kerosene Unit,148.09
+2025-05-11 03:00:00,Distillation Column,Diesel Hydrotreater,287.19
+2025-05-11 03:00:00,Naptha Splitter,Product Tank,261.63
+2025-05-11 03:00:00,Kerosene Unit,Product Tank,187.75
+2025-05-11 03:00:00,Diesel Hydrotreater,Product Tank,395.62
+2025-05-11 04:00:00,Crude Tank,Desalter,453.9
+2025-05-11 04:00:00,Desalter,Heater,217.64
+2025-05-11 04:00:00,Heater,Distillation Column,143.37
+2025-05-11 04:00:00,Distillation Column,Naptha Splitter,447.74
+2025-05-11 04:00:00,Distillation Column,Kerosene Unit,59.58
+2025-05-11 04:00:00,Distillation Column,Diesel Hydrotreater,155.28
+2025-05-11 04:00:00,Naptha Splitter,Product Tank,353.25
+2025-05-11 04:00:00,Kerosene Unit,Product Tank,73.45
+2025-05-11 04:00:00,Diesel Hydrotreater,Product Tank,245.27
+2025-05-11 05:00:00,Crude Tank,Desalter,58.66
+2025-05-11 05:00:00,Desalter,Heater,374.02
+2025-05-11 05:00:00,Heater,Distillation Column,456.25
+2025-05-11 05:00:00,Distillation Column,Naptha Splitter,393.37
+2025-05-11 05:00:00,Distillation Column,Kerosene Unit,379.46
+2025-05-11 05:00:00,Distillation Column,Diesel Hydrotreater,351.28
+2025-05-11 05:00:00,Naptha Splitter,Product Tank,390.3
+2025-05-11 05:00:00,Kerosene Unit,Product Tank,199.45
+2025-05-11 05:00:00,Diesel Hydrotreater,Product Tank,163.51
+2025-05-11 06:00:00,Crude Tank,Desalter,120.3
+2025-05-11 06:00:00,Desalter,Heater,374.41
+2025-05-11 06:00:00,Heater,Distillation Column,82.57
+2025-05-11 06:00:00,Distillation Column,Naptha Splitter,167.68
+2025-05-11 06:00:00,Distillation Column,Kerosene Unit,323.52
+2025-05-11 06:00:00,Distillation Column,Diesel Hydrotreater,95.27
+2025-05-11 06:00:00,Naptha Splitter,Product Tank,406.34
+2025-05-11 06:00:00,Kerosene Unit,Product Tank,456.41
+2025-05-11 06:00:00,Diesel Hydrotreater,Product Tank,84.45
+2025-05-11 07:00:00,Crude Tank,Desalter,456.25
+2025-05-11 07:00:00,Desalter,Heater,243.01
+2025-05-11 07:00:00,Heater,Distillation Column,115.36
+2025-05-11 07:00:00,Distillation Column,Naptha Splitter,366.55
+2025-05-11 07:00:00,Distillation Column,Kerosene Unit,237.32
+2025-05-11 07:00:00,Distillation Column,Diesel Hydrotreater,143.54
+2025-05-11 07:00:00,Naptha Splitter,Product Tank,61.73
+2025-05-11 07:00:00,Kerosene Unit,Product Tank,223.93
+2025-05-11 07:00:00,Diesel Hydrotreater,Product Tank,238.98
+2025-05-11 08:00:00,Crude Tank,Desalter,168.59
+2025-05-11 08:00:00,Desalter,Heater,338.14
+2025-05-11 08:00:00,Heater,Distillation Column,115.66
+2025-05-11 08:00:00,Distillation Column,Naptha Splitter,434.34
+2025-05-11 08:00:00,Distillation Column,Kerosene Unit,112.71
+2025-05-11 08:00:00,Distillation Column,Diesel Hydrotreater,108.93
+2025-05-11 08:00:00,Naptha Splitter,Product Tank,140.18
+2025-05-11 08:00:00,Kerosene Unit,Product Tank,490.24
+2025-05-11 08:00:00,Diesel Hydrotreater,Product Tank,97.33
+2025-05-11 09:00:00,Crude Tank,Desalter,392.05
+2025-05-11 09:00:00,Desalter,Heater,494.88
+2025-05-11 09:00:00,Heater,Distillation Column,488.53
+2025-05-11 09:00:00,Distillation Column,Naptha Splitter,264.76
+2025-05-11 09:00:00,Distillation Column,Kerosene Unit,76.66
+2025-05-11 09:00:00,Distillation Column,Diesel Hydrotreater,272.2
+2025-05-11 09:00:00,Naptha Splitter,Product Tank,312.81
+2025-05-11 09:00:00,Kerosene Unit,Product Tank,444.61
+2025-05-11 09:00:00,Diesel Hydrotreater,Product Tank,408.69
+2025-05-11 10:00:00,Crude Tank,Desalter,81.6
+2025-05-11 10:00:00,Desalter,Heater,152.1
+2025-05-11 10:00:00,Heater,Distillation Column,439.59
+2025-05-11 10:00:00,Distillation Column,Naptha Splitter,337.19
+2025-05-11 10:00:00,Distillation Column,Kerosene Unit,460.56
+2025-05-11 10:00:00,Distillation Column,Diesel Hydrotreater,365.48
+2025-05-11 10:00:00,Naptha Splitter,Product Tank,245.51
+2025-05-11 10:00:00,Kerosene Unit,Product Tank,107.3
+2025-05-11 10:00:00,Diesel Hydrotreater,Product Tank,373.33
+2025-05-11 11:00:00,Crude Tank,Desalter,330.64
+2025-05-11 11:00:00,Desalter,Heater,288.32
+2025-05-11 11:00:00,Heater,Distillation Column,300.16
+2025-05-11 11:00:00,Distillation Column,Naptha Splitter,361.71
+2025-05-11 11:00:00,Distillation Column,Kerosene Unit,62.75
+2025-05-11 11:00:00,Distillation Column,Diesel Hydrotreater,312.56
+2025-05-11 11:00:00,Naptha Splitter,Product Tank,155.22
+2025-05-11 11:00:00,Kerosene Unit,Product Tank,326.92
+2025-05-11 11:00:00,Diesel Hydrotreater,Product Tank,59.66
+2025-05-11 12:00:00,Crude Tank,Desalter,251.92
+2025-05-11 12:00:00,Desalter,Heater,379.12
+2025-05-11 12:00:00,Heater,Distillation Column,94.3
+2025-05-11 12:00:00,Distillation Column,Naptha Splitter,67.05
+2025-05-11 12:00:00,Distillation Column,Kerosene Unit,171.76
+2025-05-11 12:00:00,Distillation Column,Diesel Hydrotreater,432.0
+2025-05-11 12:00:00,Naptha Splitter,Product Tank,152.52
+2025-05-11 12:00:00,Kerosene Unit,Product Tank,333.23
+2025-05-11 12:00:00,Diesel Hydrotreater,Product Tank,147.48
+2025-05-11 13:00:00,Crude Tank,Desalter,225.47
+2025-05-11 13:00:00,Desalter,Heater,145.62
+2025-05-11 13:00:00,Heater,Distillation Column,145.42
+2025-05-11 13:00:00,Distillation Column,Naptha Splitter,236.5
+2025-05-11 13:00:00,Distillation Column,Kerosene Unit,394.43
+2025-05-11 13:00:00,Distillation Column,Diesel Hydrotreater,347.17
+2025-05-11 13:00:00,Naptha Splitter,Product Tank,340.75
+2025-05-11 13:00:00,Kerosene Unit,Product Tank,248.93
+2025-05-11 13:00:00,Diesel Hydrotreater,Product Tank,226.22
+2025-05-11 14:00:00,Crude Tank,Desalter,181.71
+2025-05-11 14:00:00,Desalter,Heater,358.69
+2025-05-11 14:00:00,Heater,Distillation Column,411.96
+2025-05-11 14:00:00,Distillation Column,Naptha Splitter,62.42
+2025-05-11 14:00:00,Distillation Column,Kerosene Unit,108.33
+2025-05-11 14:00:00,Distillation Column,Diesel Hydrotreater,342.73
+2025-05-11 14:00:00,Naptha Splitter,Product Tank,74.22
+2025-05-11 14:00:00,Kerosene Unit,Product Tank,460.06
+2025-05-11 14:00:00,Diesel Hydrotreater,Product Tank,337.45
+2025-05-11 15:00:00,Crude Tank,Desalter,93.95
+2025-05-11 15:00:00,Desalter,Heater,314.56
+2025-05-11 15:00:00,Heater,Distillation Column,315.76
+2025-05-11 15:00:00,Distillation Column,Naptha Splitter,199.73
+2025-05-11 15:00:00,Distillation Column,Kerosene Unit,312.85
+2025-05-11 15:00:00,Distillation Column,Diesel Hydrotreater,129.49
+2025-05-11 15:00:00,Naptha Splitter,Product Tank,187.72
+2025-05-11 15:00:00,Kerosene Unit,Product Tank,470.27
+2025-05-11 15:00:00,Diesel Hydrotreater,Product Tank,351.88
+2025-05-11 16:00:00,Crude Tank,Desalter,428.46
+2025-05-11 16:00:00,Desalter,Heater,205.65
+2025-05-11 16:00:00,Heater,Distillation Column,207.18
+2025-05-11 16:00:00,Distillation Column,Naptha Splitter,240.5
+2025-05-11 16:00:00,Distillation Column,Kerosene Unit,132.87
+2025-05-11 16:00:00,Distillation Column,Diesel Hydrotreater,342.06
+2025-05-11 16:00:00,Naptha Splitter,Product Tank,175.26
+2025-05-11 16:00:00,Kerosene Unit,Product Tank,304.29
+2025-05-11 16:00:00,Diesel Hydrotreater,Product Tank,470.69
+2025-05-11 17:00:00,Crude Tank,Desalter,374.19
+2025-05-11 17:00:00,Desalter,Heater,210.63
+2025-05-11 17:00:00,Heater,Distillation Column,58.77
+2025-05-11 17:00:00,Distillation Column,Naptha Splitter,381.1
+2025-05-11 17:00:00,Distillation Column,Kerosene Unit,458.83
+2025-05-11 17:00:00,Distillation Column,Diesel Hydrotreater,284.18
+2025-05-11 17:00:00,Naptha Splitter,Product Tank,472.03
+2025-05-11 17:00:00,Kerosene Unit,Product Tank,439.8
+2025-05-11 17:00:00,Diesel Hydrotreater,Product Tank,145.81
+2025-05-11 18:00:00,Crude Tank,Desalter,313.85
+2025-05-11 18:00:00,Desalter,Heater,81.81
+2025-05-11 18:00:00,Heater,Distillation Column,131.75
+2025-05-11 18:00:00,Distillation Column,Naptha Splitter,285.5
+2025-05-11 18:00:00,Distillation Column,Kerosene Unit,75.34
+2025-05-11 18:00:00,Distillation Column,Diesel Hydrotreater,465.73
+2025-05-11 18:00:00,Naptha Splitter,Product Tank,455.74
+2025-05-11 18:00:00,Kerosene Unit,Product Tank,87.54
+2025-05-11 18:00:00,Diesel Hydrotreater,Product Tank,383.22
+2025-05-11 19:00:00,Crude Tank,Desalter,350.03
+2025-05-11 19:00:00,Desalter,Heater,110.1
+2025-05-11 19:00:00,Heater,Distillation Column,390.8
+2025-05-11 19:00:00,Distillation Column,Naptha Splitter,78.94
+2025-05-11 19:00:00,Distillation Column,Kerosene Unit,71.88
+2025-05-11 19:00:00,Distillation Column,Diesel Hydrotreater,391.72
+2025-05-11 19:00:00,Naptha Splitter,Product Tank,463.87
+2025-05-11 19:00:00,Kerosene Unit,Product Tank,481.75
+2025-05-11 19:00:00,Diesel Hydrotreater,Product Tank,420.65
+2025-05-11 20:00:00,Crude Tank,Desalter,78.91
+2025-05-11 20:00:00,Desalter,Heater,344.15
+2025-05-11 20:00:00,Heater,Distillation Column,383.31
+2025-05-11 20:00:00,Distillation Column,Naptha Splitter,305.7
+2025-05-11 20:00:00,Distillation Column,Kerosene Unit,224.28
+2025-05-11 20:00:00,Distillation Column,Diesel Hydrotreater,499.55
+2025-05-11 20:00:00,Naptha Splitter,Product Tank,462.71
+2025-05-11 20:00:00,Kerosene Unit,Product Tank,434.42
+2025-05-11 20:00:00,Diesel Hydrotreater,Product Tank,423.47
+2025-05-11 21:00:00,Crude Tank,Desalter,144.06
+2025-05-11 21:00:00,Desalter,Heater,480.02
+2025-05-11 21:00:00,Heater,Distillation Column,213.0
+2025-05-11 21:00:00,Distillation Column,Naptha Splitter,378.2
+2025-05-11 21:00:00,Distillation Column,Kerosene Unit,149.59
+2025-05-11 21:00:00,Distillation Column,Diesel Hydrotreater,230.24
+2025-05-11 21:00:00,Naptha Splitter,Product Tank,210.39
+2025-05-11 21:00:00,Kerosene Unit,Product Tank,337.85
+2025-05-11 21:00:00,Diesel Hydrotreater,Product Tank,490.01
+2025-05-11 22:00:00,Crude Tank,Desalter,276.48
+2025-05-11 22:00:00,Desalter,Heater,296.85
+2025-05-11 22:00:00,Heater,Distillation Column,235.71
+2025-05-11 22:00:00,Distillation Column,Naptha Splitter,109.3
+2025-05-11 22:00:00,Distillation Column,Kerosene Unit,75.99
+2025-05-11 22:00:00,Distillation Column,Diesel Hydrotreater,411.67
+2025-05-11 22:00:00,Naptha Splitter,Product Tank,380.22
+2025-05-11 22:00:00,Kerosene Unit,Product Tank,413.71
+2025-05-11 22:00:00,Diesel Hydrotreater,Product Tank,408.45
+2025-05-11 23:00:00,Crude Tank,Desalter,81.37
+2025-05-11 23:00:00,Desalter,Heater,478.62
+2025-05-11 23:00:00,Heater,Distillation Column,339.37
+2025-05-11 23:00:00,Distillation Column,Naptha Splitter,402.25
+2025-05-11 23:00:00,Distillation Column,Kerosene Unit,421.43
+2025-05-11 23:00:00,Distillation Column,Diesel Hydrotreater,262.07
+2025-05-11 23:00:00,Naptha Splitter,Product Tank,232.11
+2025-05-11 23:00:00,Kerosene Unit,Product Tank,162.62
+2025-05-11 23:00:00,Diesel Hydrotreater,Product Tank,358.65
+2025-05-12 00:00:00,Crude Tank,Desalter,336.06
+2025-05-12 00:00:00,Desalter,Heater,84.46
+2025-05-12 00:00:00,Heater,Distillation Column,496.13
+2025-05-12 00:00:00,Distillation Column,Naptha Splitter,439.07
+2025-05-12 00:00:00,Distillation Column,Kerosene Unit,371.79
+2025-05-12 00:00:00,Distillation Column,Diesel Hydrotreater,432.25
+2025-05-12 00:00:00,Naptha Splitter,Product Tank,160.7
+2025-05-12 00:00:00,Kerosene Unit,Product Tank,345.83
+2025-05-12 00:00:00,Diesel Hydrotreater,Product Tank,234.5
+2025-05-12 01:00:00,Crude Tank,Desalter,460.64
+2025-05-12 01:00:00,Desalter,Heater,373.16
+2025-05-12 01:00:00,Heater,Distillation Column,82.18
+2025-05-12 01:00:00,Distillation Column,Naptha Splitter,109.12
+2025-05-12 01:00:00,Distillation Column,Kerosene Unit,309.38
+2025-05-12 01:00:00,Distillation Column,Diesel Hydrotreater,176.51
+2025-05-12 01:00:00,Naptha Splitter,Product Tank,210.39
+2025-05-12 01:00:00,Kerosene Unit,Product Tank,267.97
+2025-05-12 01:00:00,Diesel Hydrotreater,Product Tank,429.48
