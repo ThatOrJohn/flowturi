@@ -4,47 +4,218 @@
   display: flex;
   justify-content: center;
   position: relative;
-  margin-top: -20px; /* Move the diagram higher */
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+  margin: 0;
+  overflow: hidden; /* Ensure content stays within bounds */
+}
+
+/* Layer structure for proper stacking */
+.links-layer {
+  z-index: 1;
+}
+
+.nodes-layer {
+  z-index: 2;
+}
+
+.link-labels-layer {
+  z-index: 3;
+}
+
+.node-labels-layer {
+  z-index: 4; /* Top layer */
 }
 
 .node rect {
   cursor: pointer;
-  transition: fill 0.2s;
+  transition: all 0.2s;
   shape-rendering: crispEdges;
-  stroke: rgba(0, 0, 0, 0.2);
-  stroke-width: 1px;
+  stroke: rgba(0, 0, 0, 0.3);
+  stroke-width: 0.5;
 }
 
+/* Source and sink node label emphasis */
+[data-node-type="source"] .node-label-background,
+[data-node-type="sink"] .node-label-background {
+  fill: rgba(30, 30, 30, 0.85);
+  stroke: rgba(255, 255, 255, 0.4);
+  filter: drop-shadow(0px 1px 3px rgba(0, 0, 0, 0.6));
+}
+
+[data-node-type="source"] .node-label,
+[data-node-type="sink"] .node-label {
+  font-weight: 600;
+}
+
+/* Node label styling */
 .node-label {
   pointer-events: none;
-  font-weight: 500;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  fill: #ffffff;
   user-select: none;
 }
 
 .node-label-background {
-  opacity: 0.7;
+  opacity: 0.98; /* Higher opacity for better visibility */
   rx: 3px;
   ry: 3px;
+  fill: rgba(20, 20, 20, 0.85);
+  stroke: rgba(255, 255, 255, 0.35);
+  stroke-width: 0.5;
+  filter: drop-shadow(0px 1px 3px rgba(0, 0, 0, 0.5));
 }
 
+/* Add special styles for nodes that need to have labels directly on them */
+[data-specific-node="Naphtha Splitter"] .node-label-background,
+[data-specific-node="Kerosene Unit"] .node-label-background,
+[data-specific-node="Diesel Hydrotreater"] .node-label-background {
+  fill: rgba(10, 10, 20, 0.9);
+  stroke: rgba(200, 200, 255, 0.4);
+  filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.7));
+}
+
+[data-specific-node="Naphtha Splitter"] .node-label,
+[data-specific-node="Kerosene Unit"] .node-label,
+[data-specific-node="Diesel Hydrotreater"] .node-label {
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* Highlight node when hovered */
+.node:hover rect {
+  stroke: rgba(255, 255, 255, 0.5);
+  stroke-width: 1.5;
+}
+
+.node:hover .node-label-background {
+  fill: #ffffff !important;
+  stroke: rgba(0, 0, 0, 0.2);
+  filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* Link styling */
 .link path {
   cursor: pointer;
-  transition: stroke-opacity 0.2s, stroke-width 0.2s;
+  transition: stroke-opacity 0.3s;
   fill: none;
 }
 
+/* Link label styling */
 .link-label {
   pointer-events: none;
-  font-weight: 500;
+  font-weight: 600; /* Make text bolder */
   user-select: none;
+  font-size: 10px;
+  fill: #ffffff; /* White text for dark mode compatibility */
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.7);
 }
 
 .link-label-background {
-  opacity: 0.85;
+  opacity: 0.98; /* Higher opacity */
   rx: 3px;
   ry: 3px;
+  fill: rgba(40, 40, 40, 0.85) !important; /* Darker background */
+  stroke: rgba(255, 255, 255, 0.25);
+  stroke-width: 0.5px;
+  filter: drop-shadow(0px 1px 3px rgba(0, 0, 0, 0.3));
 }
 
+/* Highlight link when hovered */
+.link:hover path {
+  stroke-opacity: 0.8 !important;
+}
+
+.link:hover .link-label-background {
+  fill: #ffffff !important;
+  stroke: rgba(0, 0, 0, 0.2);
+  filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* Dark mode compatibility */
+body.dark .node-label,
+body.dark .link-label {
+  fill: #ffffff;
+}
+
+body.dark .node-label-background,
+body.dark .link-label-background {
+  fill: rgba(30, 30, 35, 0.9) !important;
+  stroke: rgba(255, 255, 255, 0.2);
+}
+
+body.dark .node:hover .node-label-background,
+body.dark .link:hover .link-label-background {
+  fill: rgba(50, 50, 55, 0.95) !important;
+}
+
+/* Connector line styling */
+.label-connector {
+  pointer-events: none;
+  stroke: rgba(180, 180, 180, 0.25);
+  stroke-width: 0.5px;
+  stroke-dasharray: 2, 2;
+  filter: none; /* Remove shadow for a cleaner look */
+}
+
+body.dark .label-connector {
+  stroke: rgba(180, 180, 180, 0.2);
+}
+
+body.light .label-connector {
+  stroke: rgba(100, 100, 100, 0.3);
+}
+
+/* Specific node label emphasis */
+[data-node-type="intermediate"] .node-label-background {
+  fill: rgba(30, 30, 35, 0.85);
+  stroke: rgba(255, 255, 255, 0.3);
+}
+
+/* Add special styles for specific nodes that need more visibility */
+.node-label-group[data-specific-node="Distillation Column"]
+  .node-label-background,
+.node-label-group[data-specific-node="Kerosene Unit"] .node-label-background {
+  fill: rgba(40, 40, 60, 0.9);
+  stroke: rgba(120, 180, 255, 0.4);
+  filter: drop-shadow(0px 1px 4px rgba(0, 0, 0, 0.6));
+}
+
+/* Special styling specifically for Naphtha Splitter to address overlap issues */
+[data-specific-node="Naphtha Splitter"] .node-label-background {
+  fill: rgba(5, 5, 25, 0.95);
+  stroke: rgba(220, 220, 255, 0.5);
+  filter: drop-shadow(0px 2px 5px rgba(0, 0, 0, 0.8));
+  /* Add slightly larger padding around the text */
+  rx: 4px;
+  ry: 4px;
+}
+
+[data-specific-node="Naphtha Splitter"] .node-label {
+  font-weight: 700;
+  fill: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 1);
+}
+
+/* Other node label styles */
+[data-specific-node="Kerosene Unit"] .node-label-background,
+[data-specific-node="Diesel Hydrotreater"] .node-label-background {
+  fill: rgba(10, 10, 20, 0.9);
+  stroke: rgba(200, 200, 255, 0.4);
+  filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.7));
+}
+
+[data-specific-node="Kerosene Unit"] .node-label,
+[data-specific-node="Diesel Hydrotreater"] .node-label {
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* Error and empty state styles */
 .no-data {
   text-align: center;
   font-size: 1.2rem;

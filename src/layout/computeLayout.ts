@@ -138,10 +138,29 @@ export function computeLayout(
     value: link.value,
   }));
 
-  // Settings for layout - reduce top margin to move diagram higher
-  const margins = { left: 100, right: 100, top: 60, bottom: 60 };
-  const nodeWidth = 20;
-  const nodePadding = 30;
+  // Adjust margins based on chart size and node count
+  // Use smaller margins, especially at the top, to maximize usable space
+  const nodeCount = allNodes.size;
+  const marginScalingFactor = Math.max(0.05, Math.min(0.12, 10 / nodeCount));
+  const margins = {
+    left: Math.max(40, Math.round(width * marginScalingFactor)),
+    right: Math.max(40, Math.round(width * marginScalingFactor)),
+    top: Math.max(30, Math.round(height * 0.05)), // Increased to ensure content isn't too high
+    bottom: Math.max(30, Math.round(height * 0.05)), // Ensure equal margins top and bottom for centering
+  };
+
+  // Adjust node width and padding based on chart dimensions
+  const nodeWidth = Math.min(28, Math.max(15, Math.round(width / 45)));
+
+  // Calculate padding based on available height and node count
+  // With smaller padding for many nodes, larger padding for few nodes
+  const usableHeight = height - margins.top - margins.bottom;
+  const avgNodesPerLayer =
+    nodeCount / (Math.max(...fullNodes.map((n) => n.index || 0)) + 1);
+  const nodePadding = Math.max(
+    8, // Minimum padding
+    Math.min(25, Math.floor(usableHeight / (avgNodesPerLayer * 2.5)))
+  );
 
   // Calculate layers using d3-sankey
   const tempSankey = d3Sankey<Node, Link>()
@@ -225,29 +244,74 @@ export function computeLayout(
   // Calculate node heights and vertical positions
   const yPositions = new Map<string, number>();
   const nodeHeights = new Map<string, number>();
-  const minNodeHeight = 30;
 
-  // Calculate the available height
-  const usableHeight = height - margins.top - margins.bottom;
+  // Base minimum node height on chart dimensions
+  const minNodeHeight = Math.max(15, Math.min(30, Math.floor(height / 20)));
 
-  // Position nodes
+  // Find max total value to normalize heights
+  const maxLayerTotalValue = Math.max(
+    ...Array.from(nodesByLayer.entries()).map(([_, nodes]) =>
+      nodes.reduce((sum, node) => sum + (nodeValues.get(node.name) || 0), 0)
+    )
+  );
+
+  // Center the nodes vertically in the available space
   nodesByLayer.forEach((nodes, layer) => {
     if (!nodes.length) return;
 
-    // Calculate heights for nodes based on their values
+    // Calculate total value in this layer
+    const layerTotalValue = nodes.reduce(
+      (sum, node) => sum + (nodeValues.get(node.name) || 1),
+      0
+    );
+
+    // Use more of the available height - scale up node heights
+    const heightScalingFactor = Math.min(1.5, 3 / Math.sqrt(nodes.length));
+    const totalAvailableHeight =
+      usableHeight - (nodes.length - 1) * nodePadding;
+
+    // Normalize heights to fit within available space and maintain proportions
+    let totalHeight = 0;
+
+    // First pass: calculate proportional heights
     nodes.forEach((node) => {
       const nodeValue = Math.max(1, nodeValues.get(node.name) || 1);
-      // Scale height by square root of value to avoid extreme differences
-      const height = Math.max(minNodeHeight, Math.sqrt(nodeValue) * 3);
-      nodeHeights.set(node.name, height);
+      const proportion = nodeValue / layerTotalValue;
+      // Scale up smaller nodes, ensure minimum node height for visibility
+      const calculatedHeight = Math.max(
+        minNodeHeight,
+        Math.min(
+          100,
+          Math.floor(proportion * totalAvailableHeight * heightScalingFactor)
+        )
+      );
+      nodeHeights.set(node.name, calculatedHeight);
+      totalHeight += calculatedHeight + nodePadding;
     });
+    totalHeight -= nodePadding; // Remove last padding
 
-    // Calculate total height needed for this layer
-    const totalHeight = nodes.reduce((sum, node) => {
-      return sum + (nodeHeights.get(node.name) || minNodeHeight) + nodePadding;
-    }, -nodePadding); // Subtract the last padding
+    // If total exceeds available height, scale down proportionally
+    if (totalHeight > usableHeight) {
+      const scaleFactor = usableHeight / totalHeight;
+      nodes.forEach((node) => {
+        const currentHeight = nodeHeights.get(node.name) || minNodeHeight;
+        const scaledHeight = Math.max(
+          minNodeHeight,
+          Math.floor(currentHeight * scaleFactor)
+        );
+        nodeHeights.set(node.name, scaledHeight);
+      });
 
-    // Center the layer in available space
+      // Recalculate total height
+      totalHeight = nodes.reduce(
+        (sum, node) =>
+          sum + (nodeHeights.get(node.name) || minNodeHeight) + nodePadding,
+        -nodePadding
+      );
+    }
+
+    // Center nodes vertically in the available space
+    // This ensures equal space above and below the diagram
     let y = margins.top + (usableHeight - totalHeight) / 2;
 
     // Assign y positions
@@ -263,7 +327,7 @@ export function computeLayout(
   // Calculate x positions for each layer
   const xPositions = new Map<number, number>();
   const layerCount = Math.max(...Array.from(nodesByLayer.keys())) + 1;
-  const usableWidth = width - margins.left - margins.right;
+  const usableWidth = width - margins.left - margins.right - nodeWidth;
 
   // Distribute layers evenly across the width
   for (let layer = 0; layer < layerCount; layer++) {

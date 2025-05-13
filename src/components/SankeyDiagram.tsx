@@ -62,16 +62,37 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
   currentIndex = 0,
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [layoutStates, setLayoutStates] = useState<LayoutState[]>([]);
   const [currentLayoutState, setCurrentLayoutState] =
     useState<LayoutState | null>(null);
   const [colorScale, setColorScale] =
     useState<d3.ScaleOrdinal<string, string, never>>();
   const [error, setError] = useState<string | null>(null);
+  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
 
-  const width = 800;
-  const height = 600;
-  const margin = { top: 0, right: 0, bottom: 0, left: 0 };
+  // Create a cache to maintain label positions across frames
+  const labelPositionCache = useRef(
+    new Map<
+      string,
+      {
+        x: number;
+        y: number;
+        anchor: string;
+        textX: number;
+        textY: number;
+      }
+    >()
+  ).current;
+
+  const width = dimensions.width;
+  const height = dimensions.height;
+  const margin = { top: 5, right: 20, bottom: 5, left: 20 };
+
+  // Helper function to generate a position key for a node
+  const getPositionKey = (node: Node): string => {
+    return `node-${node.name}-${node.depthCategory || ""}`;
+  };
 
   const colorConfig: ColorConfig = {
     nodes: {
@@ -162,7 +183,16 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
       const svg = d3.select(svgRef.current);
       svg.selectAll("*").remove(); // Clear previous rendering
 
-      const g = svg.append("g");
+      // Create layered groups for proper z-index ordering
+      const baseGroup = svg.append("g");
+      const linksGroup = baseGroup.append("g").attr("class", "links-layer");
+      const nodesGroup = baseGroup.append("g").attr("class", "nodes-layer");
+      const linkLabelsGroup = baseGroup
+        .append("g")
+        .attr("class", "link-labels-layer");
+      const nodeLabelsGroup = baseGroup
+        .append("g")
+        .attr("class", "node-labels-layer");
 
       // Get all nodes and links from current layout state
       const nodeNames = Object.keys(currentLayoutState.nodePositions);
@@ -208,14 +238,46 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
         path: linkPath.path,
       }));
 
-      // Draw links
-      const link = g
+      // Create the collision tracking system
+      type BoundingBox = {
+        x1: number;
+        y1: number;
+        x2: number;
+        y2: number;
+        node?: string; // Node name for identification
+        priority: number; // Higher number = higher priority
+      };
+
+      // Array to track all occupied areas for collision detection
+      const occupiedAreas: BoundingBox[] = [];
+
+      // Function to check if a new label would overlap with existing labels
+      const wouldOverlap = (box: BoundingBox) => {
+        // Check against all existing boxes
+        for (const area of occupiedAreas) {
+          if (
+            !(
+              box.x2 < area.x1 ||
+              box.x1 > area.x2 ||
+              box.y2 < area.y1 ||
+              box.y1 > area.y2
+            )
+          ) {
+            return area; // Return the overlapping area
+          }
+        }
+        return null; // No overlap
+      };
+
+      // Draw links first (they should be at the back)
+      const link = linksGroup
         .selectAll(".link")
         .data(links)
         .enter()
         .append("g")
         .attr("class", "link");
 
+      // Add link paths
       link
         .append("path")
         .attr("d", (d) => d.path || "")
@@ -300,7 +362,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
       }
 
       // Draw nodes
-      const node = g
+      const node = nodesGroup
         .selectAll(".node")
         .data(nodes)
         .enter()
@@ -326,10 +388,15 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
           );
         });
 
-      // Add node labels
-      node
+      // Add node labels (top layer - highest priority)
+      nodeLabelsGroup
+        .selectAll(".node-label")
+        .data(nodes)
+        .enter()
         .append("g")
         .attr("class", "node-label-group")
+        .attr("data-node-type", (d) => d.depthCategory || "intermediate")
+        .attr("data-node-name", (d) => d.name)
         .each(function (d) {
           try {
             const g = d3.select(this);
@@ -338,33 +405,168 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
 
             if (width <= 0 || height <= 0) return; // Skip invalid dimensions
 
-            let x = width / 2;
+            let xOffset = 0;
+            let x = 0;
+            let y = 0;
             let textAnchor = "middle";
 
-            // Adjust position based on node type
+            // Position based on node type with larger offsets to avoid links and other nodes
             if (d.depthCategory === "source") {
-              x = width + 5;
-              textAnchor = "start";
+              xOffset = 0; // Center horizontally over the node
+              x = (d.x0 ?? 0) + width / 2;
+              y = (d.y0 ?? 0) + height / 2; // Position in center of node
+              textAnchor = "middle";
             } else if (d.depthCategory === "sink") {
-              x = -5;
-              textAnchor = "end";
+              xOffset = 0; // Center horizontally over the node
+              x = (d.x0 ?? 0) + width / 2;
+              y = (d.y0 ?? 0) + height / 2; // Position in center of node
+              textAnchor = "middle";
+            } else {
+              // For intermediate nodes, try multiple positions to find the best one
+              // Create an array of possible positions to try in order of preference
+              const possiblePositions = [
+                {
+                  x: (d.x0 ?? 0) + width / 2,
+                  y: (d.y0 ?? 0) + height / 2, // Center first
+                  anchor: "middle",
+                  position: "center", // Center on node
+                },
+                {
+                  x: (d.x0 ?? 0) + width / 2,
+                  y: (d.y0 ?? 0) - 5, // Slightly above
+                  anchor: "middle",
+                  position: "above", // Above node
+                },
+                {
+                  x: (d.x0 ?? 0) + width / 2,
+                  y: (d.y1 ?? 0) + 5, // Slightly below
+                  anchor: "middle",
+                  position: "below", // Below node
+                },
+                {
+                  x: (d.x1 ?? 0) + 5,
+                  y: (d.y0 ?? 0) + height / 2,
+                  anchor: "start",
+                  position: "right", // Right of node
+                },
+                {
+                  x: (d.x0 ?? 0) - 5,
+                  y: (d.y0 ?? 0) + height / 2,
+                  anchor: "end",
+                  position: "left", // Left of node
+                },
+              ];
+
+              // Create temporary text element to measure its size
+              const tempText = g
+                .append("text")
+                .attr("font-size", "12px")
+                .text(d.name);
+
+              const bbox = tempText.node()?.getBBox() || {
+                x: 0,
+                y: 0,
+                width: 50,
+                height: 14,
+              };
+              tempText.remove();
+
+              // Calculate label dimensions with padding
+              const boxWidth = bbox.width + 6;
+              const boxHeight = bbox.height + 4;
+
+              // Try each position until we find one that doesn't overlap
+              let foundValidPosition = false;
+              let bestPosition = null;
+
+              // Check occupied areas array from outer scope
+              for (const pos of possiblePositions) {
+                // Calculate box position based on text anchor
+                let boxX, boxY;
+
+                if (pos.anchor === "end") {
+                  boxX = pos.x - boxWidth;
+                  boxY = pos.y - boxHeight / 2;
+                } else if (pos.anchor === "start") {
+                  boxX = pos.x;
+                  boxY = pos.y - boxHeight / 2;
+                } else {
+                  // middle
+                  boxX = pos.x - boxWidth / 2;
+                  boxY = pos.y - boxHeight / 2;
+                }
+
+                // Create bounding box for collision testing
+                const testBox = {
+                  x1: boxX,
+                  y1: boxY,
+                  x2: boxX + boxWidth,
+                  y2: boxY + boxHeight,
+                  priority: 3, // Node labels have highest priority
+                };
+
+                // Check if position is within viewport boundaries
+                const isWithinBounds =
+                  boxX >= margin.left &&
+                  boxX + boxWidth <= dimensions.width - margin.right &&
+                  boxY >= margin.top &&
+                  boxY + boxHeight <= dimensions.height - margin.bottom;
+
+                // Check if this position overlaps with any existing boxes
+                const overlap = wouldOverlap(testBox);
+
+                if (isWithinBounds && !overlap) {
+                  // Found a good position!
+                  x = pos.x;
+                  y = pos.y;
+                  textAnchor = pos.anchor;
+                  bestPosition = pos;
+                  foundValidPosition = true;
+
+                  // Add this box to occupied areas
+                  occupiedAreas.push(testBox);
+                  break;
+                }
+              }
+
+              // If we couldn't find a non-overlapping position, use the first one
+              // but add some additional offset to reduce overlap
+              if (!foundValidPosition) {
+                const firstPos = possiblePositions[0];
+                x = firstPos.x;
+                y = firstPos.y - (Math.random() * 6 - 3); // Add minimal vertical jitter
+                textAnchor = firstPos.anchor;
+
+                // Force add this box with high priority
+                const forcedBox = {
+                  x1: x - boxWidth / 2,
+                  y1: y - boxHeight / 2,
+                  x2: x + boxWidth / 2,
+                  y2: y + boxHeight / 2,
+                  priority: 4, // Extra high priority
+                };
+
+                occupiedAreas.push(forcedBox);
+              }
             }
 
             // Add background first
             g.append("rect")
               .attr("class", "node-label-background")
-              .attr("fill", "#f0f0f0")
-              .attr("rx", 2)
-              .attr("ry", 2);
+              .attr("fill", "rgba(30, 30, 30, 0.85)")
+              .attr("rx", 3)
+              .attr("ry", 3)
+              .attr("stroke", "rgba(255, 255, 255, 0.25)")
+              .attr("stroke-width", 0.5);
 
             // Add text
             g.append("text")
               .attr("class", "node-label")
               .attr("x", x)
-              .attr("y", height / 2)
+              .attr("y", y)
               .attr("dy", "0.35em")
               .attr("text-anchor", textAnchor)
-              .attr("fill", "#212121")
+              .attr("fill", "#ffffff")
               .attr("font-size", "12px")
               .text(d.name);
 
@@ -384,6 +586,34 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
                 .attr("y", bbox.y - 2)
                 .attr("width", bbox.width + 4)
                 .attr("height", bbox.height + 4);
+
+              // Add connector line for labels positioned away from nodes
+              // Calculate the distance between the label and the node center
+              const nodeCenterX = (d.x0 ?? 0) + width / 2;
+              const nodeCenterY = (d.y0 ?? 0) + height / 2;
+              const labelCenterX = bgX + bbox.width / 2;
+              const labelCenterY = bbox.y + bbox.height / 2;
+
+              // Distance threshold - only draw connector if the label is far from the node
+              const distanceThreshold = Math.min(width, height) * 0.2; // More conservative threshold
+              const distance = Math.sqrt(
+                Math.pow(nodeCenterX - labelCenterX, 2) +
+                  Math.pow(nodeCenterY - labelCenterY, 2)
+              );
+
+              if (distance > distanceThreshold) {
+                // Draw a subtle connector line
+                g.append("path")
+                  .attr("class", "label-connector")
+                  .attr(
+                    "d",
+                    `M${nodeCenterX},${nodeCenterY} L${labelCenterX},${labelCenterY}`
+                  )
+                  .attr("stroke", "rgba(255, 255, 255, 0.2)")
+                  .attr("stroke-width", 0.5)
+                  .attr("stroke-dasharray", "1,1")
+                  .attr("fill", "none");
+              }
             }
           } catch (error) {
             console.warn("Error creating node label:", error);
@@ -474,7 +704,40 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
       console.error("Error processing single frame data:", err);
       setError("Error processing data");
     }
-  }, [data, width, height]);
+  }, [data, dimensions.width, dimensions.height]);
+
+  // Add resize observer to update dimensions when container size changes
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        const { width, height } = containerRef.current.getBoundingClientRect();
+        // Apply minimum dimensions to ensure the diagram has enough space
+        setDimensions({
+          width: Math.max(width, 600),
+          height: Math.max(height, 350), // Lower minimum height to allow more compact diagrams
+        });
+      }
+    };
+
+    // Initial update
+    updateDimensions();
+
+    // Update dimensions when window resizes
+    window.addEventListener("resize", updateDimensions);
+
+    // Create observer for resize events
+    const resizeObserver = new ResizeObserver(updateDimensions);
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      window.removeEventListener("resize", updateDimensions);
+      if (containerRef.current) {
+        resizeObserver.unobserve(containerRef.current);
+      }
+    };
+  }, []);
 
   if (error) {
     return <p className="sankey-error">Error: {error}</p>;
@@ -488,12 +751,20 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
   }
 
   return (
-    <svg
-      ref={svgRef}
-      width={width}
-      height={height}
-      style={{ overflow: "visible" }} // Allow content to overflow (for node labels that exceed bounds)
-    ></svg>
+    <div
+      ref={containerRef}
+      className="sankey-container"
+      style={{ width: "100%", height: "100%", position: "relative" }}
+    >
+      <svg
+        ref={svgRef}
+        width={dimensions.width}
+        height={dimensions.height}
+        style={{ overflow: "visible" }}
+        viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
+        preserveAspectRatio="xMidYMid meet"
+      ></svg>
+    </div>
   );
 };
 
