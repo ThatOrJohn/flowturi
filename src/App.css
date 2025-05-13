@@ -679,3 +679,45 @@ body.light .theme-switch .slider:after {
 .record-again-button:hover {
   opacity: 0.9;
 }
+
+.export-frame-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+  transition: background 0.2s;
+  border: none;
+  margin-left: 8px;
+}
+
+.export-frame-button.dark {
+  background-color: #1565c0;
+  color: white;
+}
+
+.export-frame-button.light {
+  background-color: #2196f3;
+  color: white;
+}
+
+.export-frame-button:hover {
+  opacity: 0.9;
+}
+
+.export-frame-button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.export-frame-button svg {
+  margin-right: 4px;
+  display: inline-block;
+}
+
+.controls-container {
+  display: flex;
+  align-items: center;
+}
