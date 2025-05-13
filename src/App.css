@@ -452,10 +452,10 @@ body.light .theme-switch .slider:after {
 .file-info-panel {
   flex: 1;
   border-radius: 8px;
-  padding: 8px;
+  padding: 8px 12px;
   text-align: left;
   font-family: Arial, sans-serif;
-  min-height: 130px;
+  min-height: auto;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: background 0.2s, color 0.2s;
 }
@@ -475,24 +475,106 @@ body.light .theme-switch .slider:after {
 .file-info-panel h3 {
   font-size: 1.1em;
   margin-top: 0;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   border-bottom: 1px solid #e0e0e0;
-  padding-bottom: 6px;
+  padding-bottom: 4px;
 }
 
 .file-info-panel.dark h3 {
   border-color: #3d3e42;
 }
 
-.file-stats p {
-  margin: 8px 0;
+.file-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.file-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.file-info-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.file-info-item {
+  margin: 0;
   font-size: 0.95em;
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 6px;
+  align-items: baseline;
+  white-space: nowrap;
+}
+
+.file-info-item.current-frame {
+  grid-template-columns: 110px 1fr;
+}
+
+.file-info-full-width {
+  width: 100%;
+}
+
+.file-info-divider {
+  height: 1px;
+  background-color: #e0e0e0;
+  margin: 1px 0;
+  width: 100%;
+}
+
+.dark .file-info-divider {
+  background-color: #3d3e42;
+}
+
+.file-name-value {
+  font-family: "Courier New", monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .file-stats strong {
-  font-weight: 600;
-  display: inline-block;
-  min-width: 100px;
+  font-weight: 700;
+  font-size: 0.95em;
+}
+
+.file-stats strong::after {
+  content: ": ";
+  white-space: pre;
+}
+
+.file-stats .file-info-value {
+  font-weight: 400;
+}
+
+.file-stats .file-info-numeric {
+  font-family: "Courier New", monospace;
+  padding-right: 8px;
+}
+
+.file-info-snapshot-stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 0;
+}
+
+.file-info-snapshot-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 80px;
+}
+
+.file-info-snapshot-item strong {
+  white-space: nowrap;
+}
+
+.file-info-timestamp {
+  font-family: "Courier New", monospace;
 }
 
 /* Responsive layout for mobile */
@@ -506,6 +588,16 @@ body.light .theme-switch .slider:after {
   .file-info-panel {
     width: 100%;
     max-width: 100%;
+  }
+
+  .file-info-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .file-info-snapshot-stats {
+    flex-direction: column;
+    gap: 4px;
   }
 }
 
