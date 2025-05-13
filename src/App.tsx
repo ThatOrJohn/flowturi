@@ -4,12 +4,15 @@ import SankeyDiagram from "./components/SankeyDiagram";
 import ErrorBoundary from "./components/ErrorBoundary";
 import RecordButton from "./components/RecordButton";
 import ExportFrameButton from "./components/ExportFrameButton";
+import ModeToggle, { Mode } from "./components/ModeToggle";
+import WebSocketStream from "./components/WebSocketStream";
 import Papa from "papaparse";
 import { Snapshot, FileInfo } from "./types";
 import { FrameData } from "./layout/computeLayout";
 import "./App.css";
 
 const THEME_KEY = "flowturi-theme";
+const MODE_KEY = "flowturi-mode";
 
 const getPreferredTheme = (): "light" | "dark" => {
   // Check localStorage first
@@ -26,6 +29,14 @@ const getPreferredTheme = (): "light" | "dark" => {
   return "dark";
 };
 
+const getPreferredMode = (): Mode => {
+  // Check localStorage first
+  const stored = localStorage.getItem(MODE_KEY);
+  if (stored === "historical" || stored === "realtime") return stored as Mode;
+  // Default to historical
+  return "historical";
+};
+
 const App = () => {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -35,6 +46,7 @@ const App = () => {
   const [error, setError] = useState<string | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">(getPreferredTheme());
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
+  const [mode, setMode] = useState<Mode>(getPreferredMode());
   const speedMenuRef = useRef<HTMLDivElement>(null);
   const sankeyContainerRef = useRef<HTMLDivElement>(null);
 
@@ -43,6 +55,11 @@ const App = () => {
     document.body.className = theme;
     localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
+
+  // Save mode preference
+  useEffect(() => {
+    localStorage.setItem(MODE_KEY, mode);
+  }, [mode]);
 
   // Listen for OS-level theme changes if user hasn't overridden
   useEffect(() => {
@@ -87,6 +104,40 @@ const App = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Handle mode change
+  const handleModeChange = (newMode: Mode) => {
+    // Stop playback when switching modes
+    setIsPlaying(false);
+    // Clear existing snapshots when switching modes
+    setSnapshots([]);
+    // Reset error state
+    setError(null);
+    // Reset file info when switching from historical to realtime
+    if (newMode === "realtime") {
+      setFileInfo(null);
+    }
+    setMode(newMode);
+  };
+
+  // Handle WebSocket stream data
+  const handleStreamData = (data: any) => {
+    // We expect the WebSocket to send data in the same format as our Snapshot type
+    if (!data || !data.timestamp || !data.nodes || !data.links) {
+      console.error("Invalid data format from WebSocket:", data);
+      return;
+    }
+
+    // Add the new snapshot and update to show it immediately
+    setSnapshots((prev) => {
+      // Keep a reasonable number of snapshots (latest 100)
+      const newSnapshots = [...prev, data].slice(-100);
+      return newSnapshots;
+    });
+
+    // Update to show the latest snapshot
+    setCurrentIndex(snapshots.length);
+  };
 
   // Playback controls
   const handlePlayPause = () => {
@@ -457,199 +508,241 @@ const App = () => {
     </div>
   );
 
+  // Render different content based on mode
+  const renderContent = () => {
+    if (error) {
+      return (
+        <>
+          <div className="file-control-row">
+            {mode === "historical" ? (
+              <>
+                {fileUploadInput}
+                {fileInfoPanel}
+              </>
+            ) : (
+              <WebSocketStream onStreamData={handleStreamData} theme={theme} />
+            )}
+          </div>
+          <p className="error-message">{error}</p>
+        </>
+      );
+    }
+
+    if (snapshots.length === 0) {
+      return (
+        <>
+          <div className="file-control-row">
+            {mode === "historical" ? (
+              <>
+                {fileUploadInput}
+                {fileInfoPanel}
+              </>
+            ) : (
+              <WebSocketStream onStreamData={handleStreamData} theme={theme} />
+            )}
+          </div>
+          <p className="no-data-message">
+            {mode === "historical"
+              ? "Please upload a JSON or CSV file to visualize."
+              : "Connect to a WebSocket stream to begin receiving data."}
+          </p>
+        </>
+      );
+    }
+
+    // Common playback controls for both modes
+    const playbackControls = (
+      <div className="playback-controls">
+        <div className="controls-bar">
+          <button
+            onClick={handlePlayPause}
+            className="control-button"
+            disabled={snapshots.length <= 1}
+            title={isPlaying ? "Pause" : "Play"}
+          >
+            {isPlaying ? (
+              <svg className="icon" viewBox="0 0 24 24">
+                <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
+              </svg>
+            ) : (
+              <svg className="icon" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            )}
+          </button>
+          <div className="slider-wrapper">
+            <input
+              type="range"
+              min="0"
+              max={snapshots.length - 1}
+              value={currentIndex}
+              onChange={handleSliderChange}
+              disabled={snapshots.length <= 1}
+              className="timeline-slider"
+            />
+            <span className="timestamp">
+              {currentSnapshot?.timestamp || "N/A"}
+            </span>
+          </div>
+          <div className="speed-menu-container" ref={speedMenuRef}>
+            <button
+              onClick={() => setShowSpeedMenu((prev) => !prev)}
+              className="control-button"
+              disabled={snapshots.length <= 1}
+              title="Playback Speed"
+            >
+              <svg
+                className="icon"
+                viewBox="0 0 24 24"
+                style={{ width: "24px", height: "24px" }}
+              >
+                {/* Outer circle (gauge background) */}
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  fill="none"
+                  stroke="#e0e0e0"
+                  strokeWidth="2"
+                />
+                {/* Inner arc (gauge progress) */}
+                <path
+                  d="M12 2 A10 10 0 0 1 22 12 A10 10 0 0 1 12 22"
+                  fill="none"
+                  stroke="#4a90e2"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  id="gauge-arc"
+                />
+                {/* Indicator dot */}
+                <circle
+                  cx="12"
+                  cy="2"
+                  r="2"
+                  fill="#4a90e2"
+                  id="gauge-indicator"
+                />
+              </svg>
+              <span className="speed-label">{speedMultiplier}x</span>
+            </button>
+            {showSpeedMenu && (
+              <div className="speed-menu">
+                <div className="speed-options">
+                  {[0.25, 0.5, 1, 1.5, 2].map((speed) => (
+                    <button
+                      key={speed}
+                      onClick={() => handleSpeedChange(speed)}
+                      className={speedMultiplier === speed ? "active" : ""}
+                    >
+                      {speed}x
+                    </button>
+                  ))}
+                </div>
+                <div className="speed-slider">
+                  <input
+                    type="range"
+                    min="0.25"
+                    max="2"
+                    step="0.25"
+                    value={speedMultiplier}
+                    onChange={handleSpeedSliderChange}
+                  />
+                  <span>Speed: {speedMultiplier}x</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Recording Controls */}
+          {snapshots.length > 1 ? (
+            <div className="controls-container">
+              <RecordButton
+                targetRef={sankeyContainerRef as React.RefObject<HTMLElement>}
+                isPlaying={isPlaying}
+                setIsPlaying={setIsPlaying}
+                resetAnimation={resetAnimation}
+                duration={calculateAnimationDuration()}
+                theme={theme}
+                speedMultiplier={speedMultiplier}
+              />
+              <ExportFrameButton
+                targetRef={sankeyContainerRef as React.RefObject<HTMLElement>}
+                theme={theme}
+              />
+            </div>
+          ) : (
+            snapshots.length === 1 && (
+              <div className="controls-container">
+                <ExportFrameButton
+                  targetRef={sankeyContainerRef as React.RefObject<HTMLElement>}
+                  theme={theme}
+                />
+              </div>
+            )
+          )}
+        </div>
+      </div>
+    );
+
+    // Sankey visualization (common to both modes)
+    const sankeyVisualization = (
+      <div
+        className="sankey-view-container"
+        style={{
+          flex: 1,
+          minHeight: 0,
+          display: "flex",
+          flexDirection: "column",
+          paddingTop: 0,
+          marginTop: 0,
+          overflow: "hidden",
+        }}
+      >
+        <div
+          ref={sankeyContainerRef}
+          className={`sankey-container ${theme}`}
+          style={{ flex: 1 }}
+        >
+          <ErrorBoundary>
+            <SankeyDiagram snapshots={snapshots} currentIndex={currentIndex} />
+          </ErrorBoundary>
+        </div>
+      </div>
+    );
+
+    // Mode-specific bottom row
+    const bottomRow = (
+      <div className="file-control-row" style={{ marginTop: "5px" }}>
+        {mode === "historical" ? (
+          <>
+            {fileUploadInput}
+            {fileInfoPanel}
+          </>
+        ) : (
+          <WebSocketStream onStreamData={handleStreamData} theme={theme} />
+        )}
+      </div>
+    );
+
+    return (
+      <>
+        {playbackControls}
+        {sankeyVisualization}
+        {bottomRow}
+      </>
+    );
+  };
+
   return (
     <div className={`App ${theme}`}>
       <div className="app-header">
         <h1>Flowturi Studio</h1>
-        {themeToggleSwitch}
+        <div className="app-header-controls">
+          <ModeToggle currentMode={mode} onModeChange={handleModeChange} />
+          {themeToggleSwitch}
+        </div>
       </div>
-      {error ? (
-        <>
-          <div className="file-control-row">
-            {fileUploadInput}
-            {fileInfoPanel}
-          </div>
-          <p className="error-message">{error}</p>
-        </>
-      ) : snapshots.length === 0 ? (
-        <>
-          <div className="file-control-row">
-            {fileUploadInput}
-            {fileInfoPanel}
-          </div>
-          <p className="no-data-message">
-            Please upload a JSON or CSV file to visualize.
-          </p>
-        </>
-      ) : (
-        <>
-          <div className="playback-controls">
-            <div className="controls-bar">
-              <button
-                onClick={handlePlayPause}
-                className="control-button"
-                disabled={snapshots.length <= 1}
-                title={isPlaying ? "Pause" : "Play"}
-              >
-                {isPlaying ? (
-                  <svg className="icon" viewBox="0 0 24 24">
-                    <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
-                  </svg>
-                ) : (
-                  <svg className="icon" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                )}
-              </button>
-              <div className="slider-wrapper">
-                <input
-                  type="range"
-                  min="0"
-                  max={snapshots.length - 1}
-                  value={currentIndex}
-                  onChange={handleSliderChange}
-                  disabled={snapshots.length <= 1}
-                  className="timeline-slider"
-                />
-                <span className="timestamp">
-                  {currentSnapshot?.timestamp || "N/A"}
-                </span>
-              </div>
-              <div className="speed-menu-container" ref={speedMenuRef}>
-                <button
-                  onClick={() => setShowSpeedMenu((prev) => !prev)}
-                  className="control-button"
-                  disabled={snapshots.length <= 1}
-                  title="Playback Speed"
-                >
-                  <svg
-                    className="icon"
-                    viewBox="0 0 24 24"
-                    style={{ width: "24px", height: "24px" }}
-                  >
-                    {/* Outer circle (gauge background) */}
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      fill="none"
-                      stroke="#e0e0e0"
-                      strokeWidth="2"
-                    />
-                    {/* Inner arc (gauge progress) */}
-                    <path
-                      d="M12 2 A10 10 0 0 1 22 12 A10 10 0 0 1 12 22"
-                      fill="none"
-                      stroke="#4a90e2"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      id="gauge-arc"
-                    />
-                    {/* Indicator dot */}
-                    <circle
-                      cx="12"
-                      cy="2"
-                      r="2"
-                      fill="#4a90e2"
-                      id="gauge-indicator"
-                    />
-                  </svg>
-                  <span className="speed-label">{speedMultiplier}x</span>
-                </button>
-                {showSpeedMenu && (
-                  <div className="speed-menu">
-                    <div className="speed-options">
-                      {[0.25, 0.5, 1, 1.5, 2].map((speed) => (
-                        <button
-                          key={speed}
-                          onClick={() => handleSpeedChange(speed)}
-                          className={speedMultiplier === speed ? "active" : ""}
-                        >
-                          {speed}x
-                        </button>
-                      ))}
-                    </div>
-                    <div className="speed-slider">
-                      <input
-                        type="range"
-                        min="0.25"
-                        max="2"
-                        step="0.25"
-                        value={speedMultiplier}
-                        onChange={handleSpeedSliderChange}
-                      />
-                      <span>Speed: {speedMultiplier}x</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Recording Controls */}
-              {snapshots.length > 1 ? (
-                <div className="controls-container">
-                  <RecordButton
-                    targetRef={
-                      sankeyContainerRef as React.RefObject<HTMLElement>
-                    }
-                    isPlaying={isPlaying}
-                    setIsPlaying={setIsPlaying}
-                    resetAnimation={resetAnimation}
-                    duration={calculateAnimationDuration()}
-                    theme={theme}
-                    speedMultiplier={speedMultiplier}
-                  />
-                  <ExportFrameButton
-                    targetRef={
-                      sankeyContainerRef as React.RefObject<HTMLElement>
-                    }
-                    theme={theme}
-                  />
-                </div>
-              ) : (
-                snapshots.length === 1 && (
-                  <div className="controls-container">
-                    <ExportFrameButton
-                      targetRef={
-                        sankeyContainerRef as React.RefObject<HTMLElement>
-                      }
-                      theme={theme}
-                    />
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-          <div
-            className="sankey-view-container"
-            style={{
-              flex: 1,
-              minHeight: 0,
-              display: "flex",
-              flexDirection: "column",
-              paddingTop: 0,
-              marginTop: 0,
-              overflow: "hidden",
-            }}
-          >
-            <div
-              ref={sankeyContainerRef}
-              className={`sankey-container ${theme}`}
-              style={{ flex: 1 }}
-            >
-              <ErrorBoundary>
-                <SankeyDiagram
-                  snapshots={snapshots}
-                  currentIndex={currentIndex}
-                />
-              </ErrorBoundary>
-            </div>
-          </div>
-          <div className="file-control-row" style={{ marginTop: "5px" }}>
-            {fileUploadInput}
-            {fileInfoPanel}
-          </div>
-        </>
-      )}
+      {renderContent()}
     </div>
   );
 };
