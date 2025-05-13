@@ -1,0 +1,937 @@
+[
+  {
+    "timestamp": "2025-05-10 08:00:00",
+    "nodes": [
+      {
+        "name": "Client"
+      },
+      {
+        "name": "Load Balancer"
+      },
+      {
+        "name": "API Gateway"
+      },
+      {
+        "name": "Auth Service"
+      },
+      {
+        "name": "Compute Cluster"
+      },
+      {
+        "name": "Database"
+      }
+    ],
+    "links": [
+      {
+        "source": "Client",
+        "target": "Load Balancer",
+        "value": 31.43
+      },
+      {
+        "source": "Load Balancer",
+        "target": "API Gateway",
+        "value": 6.17
+      },
+      {
+        "source": "API Gateway",
+        "target": "Auth Service",
+        "value": 9.93
+      },
+      {
+        "source": "API Gateway",
+        "target": "Compute Cluster",
+        "value": 27.04
+      },
+      {
+        "source": "Auth Service",
+        "target": "Compute Cluster",
+        "value": 197.71
+      },
+      {
+        "source": "Compute Cluster",
+        "target": "Database",
+        "value": 146.27
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-05-10 08:03:00",
+    "nodes": [
+      {
+        "name": "Client"
+      },
+      {
+        "name": "Load Balancer"
+      },
+      {
+        "name": "API Gateway"
+      },
+      {
+        "name": "Auth Service"
+      },
+      {
+        "name": "Compute Cluster"
+      },
+      {
+        "name": "Database"
+      }
+    ],
+    "links": [
+      {
+        "source": "Client",
+        "target": "Load Balancer",
+        "value": 68.17
+      },
+      {
+        "source": "Load Balancer",
+        "target": "API Gateway",
+        "value": 29.47
+      },
+      {
+        "source": "API Gateway",
+        "target": "Auth Service",
+        "value": 62.14
+      },
+      {
+        "source": "API Gateway",
+        "target": "Compute Cluster",
+        "value": 165.71
+      },
+      {
+        "source": "Auth Service",
+        "target": "Compute Cluster",
+        "value": 100.87
+      },
+      {
+        "source": "Compute Cluster",
+        "target": "Database",
+        "value": 119.5
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-05-10 08:06:00",
+    "nodes": [
+      {
+        "name": "Client"
+      },
+      {
+        "name": "Load Balancer"
+      },
+      {
+        "name": "API Gateway"
+      },
+      {
+        "name": "Auth Service"
+      },
+      {
+        "name": "Compute Cluster"
+      },
+      {
+        "name": "Database"
+      }
+    ],
+    "links": [
+      {
+        "source": "Client",
+        "target": "Load Balancer",
+        "value": 74.49
+      },
+      {
+        "source": "Load Balancer",
+        "target": "API Gateway",
+        "value": 2.33
+      },
+      {
+        "source": "API Gateway",
+        "target": "Auth Service",
+        "value": 83.76
+      },
+      {
+        "source": "API Gateway",
+        "target": "Compute Cluster",
+        "value": 109.28
+      },
+      {
+        "source": "Auth Service",
+        "target": "Compute Cluster",
+        "value": 94.42
+      },
+      {
+        "source": "Compute Cluster",
+        "target": "Database",
+        "value": 47.56
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-05-10 08:09:00",
+    "nodes": [
+      {
+        "name": "Client"
+      },
+      {
+        "name": "Load Balancer"
+      },
+      {
+        "name": "API Gateway"
+      },
+      {
+        "name": "Auth Service"
+      },
+      {
+        "name": "Compute Cluster"
+      },
+      {
+        "name": "Database"
+      }
+    ],
+    "links": [
+      {
+        "source": "Client",
+        "target": "Load Balancer",
+        "value": 52.92
+      },
+      {
+        "source": "Load Balancer",
+        "target": "API Gateway",
+        "value": 44.06
+      },
+      {
+        "source": "API Gateway",
+        "target": "Auth Service",
+        "value": 56.52
+      },
+      {
+        "source": "API Gateway",
+        "target": "Compute Cluster",
+        "value": 74.43
+      },
+      {
+        "source": "Auth Service",
+        "target": "Compute Cluster",
+        "value": 39.7
+      },
+      {
+        "source": "Compute Cluster",
+        "target": "Database",
+        "value": 30.28
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-05-10 08:12:00",
+    "nodes": [
+      {
+        "name": "Client"
+      },
+      {
+        "name": "Load Balancer"
+      },
+      {
+        "name": "API Gateway"
+      },
+      {
+        "name": "Auth Service"
+      },
+      {
+        "name": "Compute Cluster"
+      },
+      {
+        "name": "Database"
+      }
+    ],
+    "links": [
+      {
+        "source": "Client",
+        "target": "Load Balancer",
+        "value": 32.05
+      },
+      {
+        "source": "Load Balancer",
+        "target": "API Gateway",
+        "value": 78.32
+      },
+      {
+        "source": "API Gateway",
+        "target": "Auth Service",
+        "value": 16.46
+      },
+      {
+        "source": "API Gateway",
+        "target": "Compute Cluster",
+        "value": 44.76
+      },
+      {
+        "source": "Auth Service",
+        "target": "Compute Cluster",
+        "value": 63.01
+      },
+      {
+        "source": "Compute Cluster",
+        "target": "Database",
+        "value": 77.2
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-05-10 08:15:00",
+    "nodes": [
+      {
+        "name": "Client"
+      },
+      {
+        "name": "Load Balancer"
+      },
+      {
+        "name": "API Gateway"
+      },
+      {
+        "name": "Auth Service"
+      },
+      {
+        "name": "Compute Cluster"
+      },
+      {
+        "name": "Database"
+      }
+    ],
+    "links": [
+      {
+        "source": "Client",
+        "target": "Load Balancer",
+        "value": 27.14
+      },
+      {
+        "source": "Load Balancer",
+        "target": "API Gateway",
+        "value": 6.17
+      },
+      {
+        "source": "API Gateway",
+        "target": "Auth Service",
+        "value": 97.97
+      },
+      {
+        "source": "API Gateway",
+        "target": "Compute Cluster",
+        "value": 120.68
+      },
+      {
+        "source": "Auth Service",
+        "target": "Compute Cluster",
+        "value": 109.48
+      },
+      {
+        "source": "Compute Cluster",
+        "target": "Database",
+        "value": 155.78
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-05-10 08:18:00",
+    "nodes": [
+      {
+        "name": "Client"
+      },
+      {
+        "name": "Load Balancer"
+      },
+      {
+        "name": "API Gateway"
+      },
+      {
+        "name": "Auth Service"
+      },
+      {
+        "name": "Compute Cluster"
+      },
+      {
+        "name": "Database"
+      }
+    ],
+    "links": [
+      {
+        "source": "Client",
+        "target": "Load Balancer",
+        "value": 89.25
+      },
+      {
+        "source": "Load Balancer",
+        "target": "API Gateway",
+        "value": 56.99
+      },
+      {
+        "source": "API Gateway",
+        "target": "Auth Service",
+        "value": 7.49
+      },
+      {
+        "source": "API Gateway",
+        "target": "Compute Cluster",
+        "value": 185.57
+      },
+      {
+        "source": "Auth Service",
+        "target": "Compute Cluster",
+        "value": 132.29
+      },
+      {
+        "source": "Compute Cluster",
+        "target": "Database",
+        "value": 6.4
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-05-10 08:21:00",
+    "nodes": [
+      {
+        "name": "Client"
+      },
+      {
+        "name": "Load Balancer"
+      },
+      {
+        "name": "API Gateway"
+      },
+      {
+        "name": "Auth Service"
+      },
+      {
+        "name": "Compute Cluster"
+      },
+      {
+        "name": "Database"
+      }
+    ],
+    "links": [
+      {
+        "source": "Client",
+        "target": "Load Balancer",
+        "value": 34.62
+      },
+      {
+        "source": "Load Balancer",
+        "target": "API Gateway",
+        "value": 38.33
+      },
+      {
+        "source": "API Gateway",
+        "target": "Auth Service",
+        "value": 69.55
+      },
+      {
+        "source": "API Gateway",
+        "target": "Compute Cluster",
+        "value": 39.39
+      },
+      {
+        "source": "Auth Service",
+        "target": "Compute Cluster",
+        "value": 101.64
+      },
+      {
+        "source": "Compute Cluster",
+        "target": "Database",
+        "value": 17.71
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-05-10 08:24:00",
+    "nodes": [
+      {
+        "name": "Client"
+      },
+      {
+        "name": "Load Balancer"
+      },
+      {
+        "name": "API Gateway"
+      },
+      {
+        "name": "Auth Service"
+      },
+      {
+        "name": "Compute Cluster"
+      },
+      {
+        "name": "Database"
+      }
+    ],
+    "links": [
+      {
+        "source": "Client",
+        "target": "Load Balancer",
+        "value": 66.58
+      },
+      {
+        "source": "Load Balancer",
+        "target": "API Gateway",
+        "value": 60.17
+      },
+      {
+        "source": "API Gateway",
+        "target": "Auth Service",
+        "value": 24.48
+      },
+      {
+        "source": "API Gateway",
+        "target": "Compute Cluster",
+        "value": 21.17
+      },
+      {
+        "source": "Auth Service",
+        "target": "Compute Cluster",
+        "value": 56.89
+      },
+      {
+        "source": "Compute Cluster",
+        "target": "Database",
+        "value": 82.91
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-05-10 08:27:00",
+    "nodes": [
+      {
+        "name": "Client"
+      },
+      {
+        "name": "Load Balancer"
+      },
+      {
+        "name": "API Gateway"
+      },
+      {
+        "name": "Auth Service"
+      },
+      {
+        "name": "Compute Cluster"
+      },
+      {
+        "name": "Database"
+      }
+    ],
+    "links": [
+      {
+        "source": "Client",
+        "target": "Load Balancer",
+        "value": 75.48
+      },
+      {
+        "source": "Load Balancer",
+        "target": "API Gateway",
+        "value": 56.39
+      },
+      {
+        "source": "API Gateway",
+        "target": "Auth Service",
+        "value": 48.69
+      },
+      {
+        "source": "API Gateway",
+        "target": "Compute Cluster",
+        "value": 129.95
+      },
+      {
+        "source": "Auth Service",
+        "target": "Compute Cluster",
+        "value": 127.22
+      },
+      {
+        "source": "Compute Cluster",
+        "target": "Database",
+        "value": 104.89
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-05-10 08:30:00",
+    "nodes": [
+      {
+        "name": "Client"
+      },
+      {
+        "name": "Load Balancer"
+      },
+      {
+        "name": "API Gateway"
+      },
+      {
+        "name": "Auth Service"
+      },
+      {
+        "name": "Compute Cluster"
+      },
+      {
+        "name": "Database"
+      }
+    ],
+    "links": [
+      {
+        "source": "Client",
+        "target": "Load Balancer",
+        "value": 57.59
+      },
+      {
+        "source": "Load Balancer",
+        "target": "API Gateway",
+        "value": 38.42
+      },
+      {
+        "source": "API Gateway",
+        "target": "Auth Service",
+        "value": 52.99
+      },
+      {
+        "source": "API Gateway",
+        "target": "Compute Cluster",
+        "value": 120.33
+      },
+      {
+        "source": "Auth Service",
+        "target": "Compute Cluster",
+        "value": 101.03
+      },
+      {
+        "source": "Compute Cluster",
+        "target": "Database",
+        "value": 137.85
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-05-10 08:33:00",
+    "nodes": [
+      {
+        "name": "Client"
+      },
+      {
+        "name": "Load Balancer"
+      },
+      {
+        "name": "API Gateway"
+      },
+      {
+        "name": "Auth Service"
+      },
+      {
+        "name": "Compute Cluster"
+      },
+      {
+        "name": "Database"
+      }
+    ],
+    "links": [
+      {
+        "source": "Client",
+        "target": "Load Balancer",
+        "value": 31.33
+      },
+      {
+        "source": "Load Balancer",
+        "target": "API Gateway",
+        "value": 58.55
+      },
+      {
+        "source": "API Gateway",
+        "target": "Auth Service",
+        "value": 20.32
+      },
+      {
+        "source": "API Gateway",
+        "target": "Compute Cluster",
+        "value": 8.03
+      },
+      {
+        "source": "Auth Service",
+        "target": "Compute Cluster",
+        "value": 87.66
+      },
+      {
+        "source": "Compute Cluster",
+        "target": "Database",
+        "value": 124.54
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-05-10 08:36:00",
+    "nodes": [
+      {
+        "name": "Client"
+      },
+      {
+        "name": "Load Balancer"
+      },
+      {
+        "name": "API Gateway"
+      },
+      {
+        "name": "Auth Service"
+      },
+      {
+        "name": "Compute Cluster"
+      },
+      {
+        "name": "Database"
+      }
+    ],
+    "links": [
+      {
+        "source": "Client",
+        "target": "Load Balancer",
+        "value": 48.05
+      },
+      {
+        "source": "Load Balancer",
+        "target": "API Gateway",
+        "value": 88.1
+      },
+      {
+        "source": "API Gateway",
+        "target": "Auth Service",
+        "value": 65.36
+      },
+      {
+        "source": "API Gateway",
+        "target": "Compute Cluster",
+        "value": 163.46
+      },
+      {
+        "source": "Auth Service",
+        "target": "Compute Cluster",
+        "value": 192.74
+      },
+      {
+        "source": "Compute Cluster",
+        "target": "Database",
+        "value": 187.82
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-05-10 08:39:00",
+    "nodes": [
+      {
+        "name": "Client"
+      },
+      {
+        "name": "Load Balancer"
+      },
+      {
+        "name": "API Gateway"
+      },
+      {
+        "name": "Auth Service"
+      },
+      {
+        "name": "Compute Cluster"
+      },
+      {
+        "name": "Database"
+      }
+    ],
+    "links": [
+      {
+        "source": "Client",
+        "target": "Load Balancer",
+        "value": 73.79
+      },
+      {
+        "source": "Load Balancer",
+        "target": "API Gateway",
+        "value": 47.23
+      },
+      {
+        "source": "API Gateway",
+        "target": "Auth Service",
+        "value": 20.22
+      },
+      {
+        "source": "API Gateway",
+        "target": "Compute Cluster",
+        "value": 87.73
+      },
+      {
+        "source": "Auth Service",
+        "target": "Compute Cluster",
+        "value": 122.37
+      },
+      {
+        "source": "Compute Cluster",
+        "target": "Database",
+        "value": 146.63
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-05-10 08:42:00",
+    "nodes": [
+      {
+        "name": "Client"
+      },
+      {
+        "name": "Load Balancer"
+      },
+      {
+        "name": "API Gateway"
+      },
+      {
+        "name": "Auth Service"
+      },
+      {
+        "name": "Compute Cluster"
+      },
+      {
+        "name": "Database"
+      }
+    ],
+    "links": [
+      {
+        "source": "Client",
+        "target": "Load Balancer",
+        "value": 44.28
+      },
+      {
+        "source": "Load Balancer",
+        "target": "API Gateway",
+        "value": 49.86
+      },
+      {
+        "source": "API Gateway",
+        "target": "Auth Service",
+        "value": 13.37
+      },
+      {
+        "source": "API Gateway",
+        "target": "Compute Cluster",
+        "value": 68.12
+      },
+      {
+        "source": "Auth Service",
+        "target": "Compute Cluster",
+        "value": 53.93
+      },
+      {
+        "source": "Compute Cluster",
+        "target": "Database",
+        "value": 96.47
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-05-10 08:45:00",
+    "nodes": [
+      {
+        "name": "Client"
+      },
+      {
+        "name": "Load Balancer"
+      },
+      {
+        "name": "API Gateway"
+      },
+      {
+        "name": "Auth Service"
+      },
+      {
+        "name": "Compute Cluster"
+      },
+      {
+        "name": "Database"
+      }
+    ],
+    "links": [
+      {
+        "source": "Client",
+        "target": "Load Balancer",
+        "value": 21.25
+      },
+      {
+        "source": "Load Balancer",
+        "target": "API Gateway",
+        "value": 65.42
+      },
+      {
+        "source": "API Gateway",
+        "target": "Auth Service",
+        "value": 5.52
+      },
+      {
+        "source": "API Gateway",
+        "target": "Compute Cluster",
+        "value": 194.25
+      },
+      {
+        "source": "Auth Service",
+        "target": "Compute Cluster",
+        "value": 4.19
+      },
+      {
+        "source": "Compute Cluster",
+        "target": "Database",
+        "value": 151.1
+      }
+    ]
+  },
+  {
+    "timestamp": "2025-05-10 08:48:00",
+    "nodes": [
+      {
+        "name": "Client"
+      },
+      {
+        "name": "Load Balancer"
+      },
+      {
+        "name": "API Gateway"
+      },
+      {
+        "name": "Auth Service"
+      },
+      {
+        "name": "Compute Cluster"
+      },
+      {
+        "name": "Database"
+      }
+    ],
+    "links": [
+      {
+        "source": "Client",
+        "target": "Load Balancer",
+        "value": 97.63
+      },
+      {
+        "source": "Load Balancer",
+        "target": "API Gateway",
+        "value": 90.46
+      },
+      {
+        "source": "API Gateway",
+        "target": "Auth Service",
+        "value": 59.97
+      },
+      {
+        "source": "API Gateway",
+        "target": "Compute Cluster",
+        "value": 179.23
+      },
+      {
+        "source": "Auth Service",
+        "target": "Compute Cluster",
+        "value": 168.59
+      },
+      {
+        "source": "Compute Cluster",
+        "target": "Database",
+        "value": 50.34
+      }
+    ]
+  }
+]

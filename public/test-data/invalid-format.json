@@ -1,0 +1,48 @@
+{
+    "result": [
+        {
+            "message": "Hello, Elbert! Your order number is: #72",
+            "phoneNumber": "1-616-676-2920 x996",
+            "phoneVariation": "+90 313 839 10 47",
+            "status": "disabled",
+            "name": {
+                "first": "Enrique",
+                "middle": "Noah",
+                "last": "Ziemann"
+            },
+            "username": "Enrique-Ziemann",
+            "password": "CT5OnVdAXexmTru",
+            "emails": [
+                "Gavin_Brekke75@example.com",
+                "Kianna.Daniel63@gmail.com"
+            ],
+            "location": {
+                "street": "3306 Kling Viaduct",
+                "city": "Ferryfurt",
+                "state": "North Carolina",
+                "country": "Kyrgyz Republic",
+                "zip": "49277-2160",
+                "coordinates": {
+                    "latitude": "-31.7145",
+                    "longitude": "60.6667"
+                }
+            },
+            "website": "https://yummy-e-reader.org",
+            "domain": "ecstatic-kiwi.info",
+            "job": {
+                "title": "Direct Accountability Manager",
+                "descriptor": "Investor",
+                "area": "Intranet",
+                "type": "Assistant",
+                "company": "Farrell - Marks"
+            },
+            "creditCard": {
+                "number": "5403-2120-0457-6834",
+                "cvv": "974",
+                "issuer": "discover"
+            },
+            "uuid": "51b90d8b-9ba6-42a8-ab92-dce4d22a7485",
+            "objectId": "6821592a25f9f92bee8791a2"
+        }
+    ]
+}
