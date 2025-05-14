@@ -3,6 +3,16 @@ import * as d3 from "d3";
 import { computeLayout, LayoutState, FrameData } from "../layout/computeLayout";
 import "./SankeyDiagram.css";
 
+// Define the type for label position overrides
+type LabelOverride = {
+  dx: number;
+  dy: number;
+};
+
+// Define the type for node ID (used in the override map)
+type NodeId = string;
+
+// Extended Node interface with additional properties for drag tracking
 interface Node {
   name: string;
   value?: number;
@@ -15,6 +25,10 @@ interface Node {
   depthCategory?: "source" | "intermediate" | "sink";
   sourceLinks?: Link[];
   targetLinks?: Link[];
+  // Additional properties for label positioning
+  origX?: number;
+  origY?: number;
+  textAnchor?: string;
 }
 
 interface Link {
@@ -56,6 +70,14 @@ interface SankeyDiagramProps {
   currentIndex?: number; // Current frame index
 }
 
+// Extend the Window interface to include our debug functions
+declare global {
+  interface Window {
+    updateDebugStatus?: (status: string) => void;
+    updateDebugEvents?: (events: string) => void;
+  }
+}
+
 const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
   data,
   snapshots = [],
@@ -70,6 +92,17 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
     useState<d3.ScaleOrdinal<string, string, never>>();
   const [error, setError] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+
+  // Debug status refs - avoid using nested useEffect hooks
+  const statusTextRef =
+    useRef<d3.Selection<SVGTextElement, unknown, null, undefined>>(null);
+  const eventTextRef =
+    useRef<d3.Selection<SVGTextElement, unknown, null, undefined>>(null);
+
+  // Add state for tracking label position overrides
+  const [labelOverrides, setLabelOverrides] = useState<
+    Map<NodeId, LabelOverride>
+  >(new Map());
 
   // Create a cache to maintain label positions across frames
   const labelPositionCache = useRef(
@@ -113,6 +146,27 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
       criticalColor: "#d32f2f",
     },
   };
+
+  // Setup debug status updating functions
+  useEffect(() => {
+    // Set up global functions for updating debug status
+    window.updateDebugStatus = function (status: string) {
+      if (statusTextRef.current) {
+        statusTextRef.current.text(`Status: ${status}`);
+      }
+    };
+
+    window.updateDebugEvents = function (events: string) {
+      if (eventTextRef.current) {
+        eventTextRef.current.text(`Events: ${events}`);
+      }
+    };
+
+    return () => {
+      delete window.updateDebugStatus;
+      delete window.updateDebugEvents;
+    };
+  }, []);
 
   // Compute stable layout for all frames
   useEffect(() => {
@@ -174,6 +228,67 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
     );
     setCurrentLayoutState(layoutStates[safeIndex]);
   }, [layoutStates, currentIndex]);
+
+  // Function to reset all label overrides
+  const resetLabelOverrides = () => {
+    setLabelOverrides(new Map());
+  };
+
+  // Function to get node ID from node object
+  const getNodeId = (node: Node): NodeId => {
+    return `node-${node.name}`;
+  };
+
+  // Function to redraw leader line between node and its label
+  const updateLeaderLine = (
+    g: d3.Selection<Element, unknown, null, undefined>,
+    node: Node,
+    labelX: number,
+    labelY: number,
+    labelWidth: number,
+    labelHeight: number
+  ) => {
+    const width = (node.x1 || 0) - (node.x0 || 0);
+    const height = (node.y1 || 0) - (node.y0 || 0);
+    const nodeCenterX = (node.x0 ?? 0) + width / 2;
+    const nodeCenterY = (node.y0 ?? 0) + height / 2;
+    const labelCenterX = labelX + labelWidth / 2;
+    const labelCenterY = labelY + labelHeight / 2;
+
+    // Find the SVG parent element - use the ownerSVGElement property from the DOM node
+    const domNode = g.node() as SVGElement;
+    const svgElement = domNode?.ownerSVGElement;
+    if (!svgElement) return;
+
+    const svgParent = d3.select(svgElement);
+
+    // Remove any existing connectors for this node
+    svgParent.selectAll(`.label-connector[data-node="${node.name}"]`).remove();
+
+    // Distance threshold - only draw connector if the label is far from the node
+    const distanceThreshold = Math.min(width, height) * 0.2;
+    const distance = Math.sqrt(
+      Math.pow(nodeCenterX - labelCenterX, 2) +
+        Math.pow(nodeCenterY - labelCenterY, 2)
+    );
+
+    // Add connector line if the label is far from its node
+    if (distance > distanceThreshold) {
+      svgParent
+        .append("path")
+        .attr("class", "label-connector")
+        .attr("data-node", node.name)
+        .attr(
+          "d",
+          `M${nodeCenterX},${nodeCenterY} L${labelCenterX},${labelCenterY}`
+        )
+        .attr("stroke", "rgba(255, 255, 255, 0.4)")
+        .attr("stroke-width", 0.8)
+        .attr("stroke-dasharray", "2,2")
+        .attr("fill", "none")
+        .attr("pointer-events", "none");
+    }
+  };
 
   // Render the chart using the current layout state
   useEffect(() => {
@@ -387,244 +502,339 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
           );
         });
 
-      // Add node labels (top layer - highest priority)
-      nodeLabelsGroup
-        .selectAll(".node-label")
+      // Add node labels with drag behavior
+      const nodeLabelGroups = nodeLabelsGroup
+        .selectAll(".node-label-group")
         .data(nodes)
         .enter()
         .append("g")
         .attr("class", "node-label-group")
         .attr("data-node-type", (d) => d.depthCategory || "intermediate")
         .attr("data-node-name", (d) => d.name)
-        .each(function (d) {
-          try {
-            const g = d3.select(this);
-            const width = (d.x1 || 0) - (d.x0 || 0);
-            const height = (d.y1 || 0) - (d.y0 || 0);
+        .style("cursor", "move") // Explicitly set cursor style
+        .style("pointer-events", "all") // Ensure they capture events
+        .each(function (d: any) {
+          const g = d3.select(this);
 
-            if (width <= 0 || height <= 0) return; // Skip invalid dimensions
+          // We need to cast d to Node since TypeScript doesn't know the data type in this context
+          const node = d as Node;
 
-            let xOffset = 0;
-            let x = 0;
-            let y = 0;
-            let textAnchor = "middle";
+          // Calculate base position
+          const width = (node.x1 || 0) - (node.x0 || 0);
+          const height = (node.y1 || 0) - (node.y0 || 0);
+          const x = (node.x0 || 0) + width / 2;
+          const y = (node.y0 || 0) + height / 2;
 
-            // Position based on node type with larger offsets to avoid links and other nodes
-            if (d.depthCategory === "source") {
-              xOffset = 0; // Center horizontally over the node
-              x = (d.x0 ?? 0) + width / 2;
-              y = (d.y0 ?? 0) + height / 2; // Position in center of node
-              textAnchor = "middle";
-            } else if (d.depthCategory === "sink") {
-              xOffset = 0; // Center horizontally over the node
-              x = (d.x0 ?? 0) + width / 2;
-              y = (d.y0 ?? 0) + height / 2; // Position in center of node
-              textAnchor = "middle";
-            } else {
-              // For intermediate nodes, try multiple positions to find the best one
-              // Create an array of possible positions to try in order of preference
-              const possiblePositions = [
-                {
-                  x: (d.x0 ?? 0) + width / 2,
-                  y: (d.y0 ?? 0) + height / 2, // Center first
-                  anchor: "middle",
-                  position: "center", // Center on node
-                },
-                {
-                  x: (d.x0 ?? 0) + width / 2,
-                  y: (d.y0 ?? 0) - 5, // Slightly above
-                  anchor: "middle",
-                  position: "above", // Above node
-                },
-                {
-                  x: (d.x0 ?? 0) + width / 2,
-                  y: (d.y1 ?? 0) + 5, // Slightly below
-                  anchor: "middle",
-                  position: "below", // Below node
-                },
-                {
-                  x: (d.x1 ?? 0) + 5,
-                  y: (d.y0 ?? 0) + height / 2,
-                  anchor: "start",
-                  position: "right", // Right of node
-                },
-                {
-                  x: (d.x0 ?? 0) - 5,
-                  y: (d.y0 ?? 0) + height / 2,
-                  anchor: "end",
-                  position: "left", // Left of node
-                },
-              ];
+          // Store original position without overrides
+          g.attr("data-initial-x", x.toString()).attr(
+            "data-initial-y",
+            y.toString()
+          );
 
-              // Create temporary text element to measure its size
-              const tempText = g
-                .append("text")
-                .attr("font-size", "12px")
-                .text(d.name);
+          // Apply override if exists
+          const nodeId = getNodeId(node);
+          const override = labelOverrides.get(nodeId);
 
-              const bbox = tempText.node()?.getBBox() || {
-                x: 0,
-                y: 0,
-                width: 50,
-                height: 14,
-              };
-              tempText.remove();
+          // Set the initial transform to place the label at the node's center
+          let translateX = x;
+          let translateY = y;
 
-              // Calculate label dimensions with padding
-              const boxWidth = bbox.width + 8; // Reduced horizontal padding
-              const boxHeight = bbox.height + 4; // Reduced vertical padding
+          // Apply override if exists
+          if (override) {
+            translateX += override.dx;
+            translateY += override.dy;
+          }
 
-              // Try each position until we find one that doesn't overlap
-              let foundValidPosition = false;
-              let bestPosition = null;
+          // Set absolute position using transform
+          g.attr("transform", `translate(${translateX}, ${translateY})`);
 
-              // Check occupied areas array from outer scope
-              for (const pos of possiblePositions) {
-                // Calculate box position based on text anchor
-                let boxX, boxY;
+          // Add label background
+          g.append("rect")
+            .attr("class", "node-label-background")
+            .attr("rx", 3)
+            .attr("ry", 3)
+            .style("pointer-events", "all");
 
-                if (pos.anchor === "end") {
-                  boxX = pos.x - boxWidth;
-                  boxY = pos.y - boxHeight / 2;
-                } else if (pos.anchor === "start") {
-                  boxX = pos.x;
-                  boxY = pos.y - boxHeight / 2;
-                } else {
-                  // middle
-                  boxX = pos.x - boxWidth / 2;
-                  boxY = pos.y - boxHeight / 2;
-                }
+          // Add label text - position at the original coordinates
+          // Since we'll be using a transform on the group
+          g.append("text")
+            .attr("class", "node-label")
+            .attr("x", 0) // Set to 0 since we'll use the group's transform
+            .attr("y", 0) // Set to 0 since we'll use the group's transform
+            .attr("dy", "0.35em")
+            .attr("text-anchor", "middle")
+            .attr("font-size", "12px")
+            .attr("pointer-events", "none") // Make sure text doesn't block events
+            .text(node.name);
 
-                // Create bounding box for collision testing
-                const testBox = {
-                  x1: boxX,
-                  y1: boxY,
-                  x2: boxX + boxWidth,
-                  y2: boxY + boxHeight,
-                  priority: 3, // Node labels have highest priority
-                };
+          // Adjust background rect size based on text
+          const textNode = g.select("text").node();
+          if (textNode) {
+            try {
+              // Safe cast to SVGTextElement
+              const bbox = (textNode as SVGTextElement).getBBox();
 
-                // Check if position is within viewport boundaries
-                const isWithinBounds =
-                  boxX >= margin.left &&
-                  boxX + boxWidth <= dimensions.width - margin.right &&
-                  boxY >= margin.top &&
-                  boxY + boxHeight <= dimensions.height - margin.bottom;
-
-                // Check if this position overlaps with any existing boxes
-                const overlap = wouldOverlap(testBox);
-
-                if (isWithinBounds && !overlap) {
-                  // Found a good position!
-                  x = pos.x;
-                  y = pos.y;
-                  textAnchor = pos.anchor;
-                  bestPosition = pos;
-                  foundValidPosition = true;
-
-                  // Add this box to occupied areas
-                  occupiedAreas.push(testBox);
-                  break;
-                }
-              }
-
-              // If we couldn't find a non-overlapping position, use the first one
-              // but add some additional offset to reduce overlap
-              if (!foundValidPosition) {
-                const firstPos = possiblePositions[0];
-                x = firstPos.x;
-                y = firstPos.y - (Math.random() * 6 - 3); // Add minimal vertical jitter
-                textAnchor = firstPos.anchor;
-
-                // Force add this box with high priority
-                const forcedBox = {
-                  x1: x - boxWidth / 2,
-                  y1: y - boxHeight / 2,
-                  x2: x + boxWidth / 2,
-                  y2: y + boxHeight / 2,
-                  priority: 4, // Extra high priority
-                };
-
-                occupiedAreas.push(forcedBox);
-              }
-            }
-
-            // Add background first
-            g.append("rect")
-              .attr("class", "node-label-background")
-              .attr("rx", 3)
-              .attr("ry", 3)
-              .attr("stroke-width", 0.5);
-
-            // Add text
-            g.append("text")
-              .attr("class", "node-label")
-              .attr("x", x)
-              .attr("y", y)
-              .attr("dy", "0.35em")
-              .attr("text-anchor", textAnchor)
-              .attr("font-size", "12px")
-              .text(d.name);
-
-            // Adjust background size
-            const text = g.select("text").node() as SVGTextElement;
-            if (text) {
-              const bbox = text.getBBox();
-              const bgX =
-                textAnchor === "start"
-                  ? x
-                  : textAnchor === "end"
-                  ? x - bbox.width
-                  : x - bbox.width / 2;
-
+              // Position the background rectangle centered on the text
               g.select("rect")
-                .attr("x", bgX - 3) // Less left/right padding
-                .attr("y", bbox.y - 2) // Less top/bottom padding
-                .attr("width", bbox.width + 6) // Less horizontal padding
-                .attr("height", bbox.height + 4); // Less vertical padding
+                .attr("x", -bbox.width / 2 - 3)
+                .attr("y", -bbox.height / 2 - 2)
+                .attr("width", bbox.width + 6)
+                .attr("height", bbox.height + 4);
 
-              // Add connector line for labels positioned away from nodes
-              // Calculate the distance between the label and the node center
-              const nodeCenterX = (d.x0 ?? 0) + width / 2;
-              const nodeCenterY = (d.y0 ?? 0) + height / 2;
-              const labelCenterX = bgX + bbox.width / 2;
-              const labelCenterY = bbox.y + bbox.height / 2;
+              // Add leader line if needed
+              const nodeCenterX = (node.x0 || 0) + width / 2;
+              const nodeCenterY = (node.y0 || 0) + height / 2;
 
-              // Distance threshold - only draw connector if the label is far from the node
-              const distanceThreshold = Math.min(width, height) * 0.2; // More conservative threshold
+              // Get the transform to find absolute position
+              const transform = g.attr("transform") || "";
+              const transformMatch = /translate\(([^,]+),\s*([^)]+)\)/.exec(
+                transform
+              );
+              if (!transformMatch) return;
+
+              // Get absolute position of the label center
+              const labelX = parseFloat(transformMatch[1]);
+              const labelY = parseFloat(transformMatch[2]);
+
+              // Calculate distance between node and label
               const distance = Math.sqrt(
-                Math.pow(nodeCenterX - labelCenterX, 2) +
-                  Math.pow(nodeCenterY - labelCenterY, 2)
+                Math.pow(nodeCenterX - labelX, 2) +
+                  Math.pow(nodeCenterY - labelY, 2)
               );
 
-              if (distance > distanceThreshold) {
-                // Draw a subtle connector line
-                g.append("path")
-                  .attr("class", "label-connector")
-                  .attr(
-                    "d",
-                    `M${nodeCenterX},${nodeCenterY} L${labelCenterX},${labelCenterY}`
-                  )
-                  .attr("stroke", "rgba(255, 255, 255, 0.2)")
-                  .attr("stroke-width", 0.5)
-                  .attr("stroke-dasharray", "1,1")
-                  .attr("fill", "none");
+              if (distance > Math.min(width, height) * 0.2) {
+                // Find the SVG parent element
+                const domNode = d3.select(this).node() as SVGElement;
+                const svgElement = domNode?.ownerSVGElement;
+
+                // Remove any existing connectors for this node
+                if (svgElement) {
+                  const svgParent = d3.select(svgElement);
+                  svgParent
+                    .selectAll(`.label-connector[data-node="${node.name}"]`)
+                    .remove();
+
+                  // Draw the connector line from node center to label center
+                  svgParent
+                    .append("path")
+                    .attr("class", "label-connector")
+                    .attr("data-node", node.name)
+                    .attr(
+                      "d",
+                      `M${nodeCenterX},${nodeCenterY} L${labelX},${labelY}`
+                    )
+                    .attr("stroke", "#ffffff")
+                    .attr("stroke-width", 0.8)
+                    .attr("stroke-dasharray", "3,3")
+                    .attr("fill", "none")
+                    .attr("pointer-events", "none");
+                }
               }
+            } catch (error) {
+              console.warn("Error positioning label:", error);
             }
-          } catch (error) {
-            console.warn("Error creating node label:", error);
           }
         });
 
-      // Add hover titles
-      node
-        .append("title")
-        .text((d) => `${d.name}\nLayer: ${d.layer}\nType: ${d.depthCategory}`);
+      // Apply drag behavior to node labels
+      nodeLabelGroups.each(function (d: any) {
+        const node = d as Node;
+        const nodeId = getNodeId(node);
+        const element = this;
+
+        console.log("Setting up drag for node:", node.name);
+
+        // Create drag behavior
+        const dragHandler = d3
+          .drag()
+          .on("start", function (event) {
+            console.log("Drag start:", node.name);
+            window.updateDebugStatus?.(`Drag started: ${node.name}`);
+            d3.select(this).raise().classed("dragging", true);
+          })
+          .on("drag", function (event) {
+            // Get current transform if any
+            const transform = d3.select(this).attr("transform") || "";
+            const match = /translate\(([^,]+),\s*([^)]+)\)/.exec(transform);
+
+            if (!match) return; // Safety check
+
+            // Get the current position from the transform
+            const currentX = parseFloat(match[1]);
+            const currentY = parseFloat(match[2]);
+
+            // Calculate new position by adding the drag delta
+            const newX = currentX + event.dx;
+            const newY = currentY + event.dy;
+
+            // Apply the new transform
+            d3.select(this)
+              .attr("transform", `translate(${newX}, ${newY})`)
+              .classed("dragged", true);
+
+            // Update debug status
+            window.updateDebugStatus?.(
+              `Dragging: ${node.name}, x=${newX.toFixed(0)}, y=${newY.toFixed(
+                0
+              )}`
+            );
+
+            // Get node dimensions and center
+            const width = (node.x1 || 0) - (node.x0 || 0);
+            const height = (node.y1 || 0) - (node.y0 || 0);
+            const nodeX = (node.x0 || 0) + width / 2;
+            const nodeY = (node.y0 || 0) + height / 2;
+
+            // Calculate distance between node center and label center
+            const dx = nodeX - newX;
+            const dy = nodeY - newY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            // Get the current SVG parent
+            const domNode = d3.select(this).node() as SVGElement;
+            const svgParent = d3.select(domNode.ownerSVGElement);
+
+            // Remove all connector lines with this node's name to avoid duplicates
+            svgParent
+              .selectAll(`.label-connector[data-node="${node.name}"]`)
+              .remove();
+
+            // Add leader line if distance is above threshold
+            const distanceThreshold = Math.min(width, height) * 0.2;
+            if (distance > distanceThreshold) {
+              // Draw the connector line in the SVG (not in the group)
+              svgParent
+                .append("path")
+                .attr("class", "label-connector")
+                .attr("data-node", node.name)
+                .attr("d", `M${nodeX},${nodeY} L${newX},${newY}`)
+                .attr("stroke", "#ffffff")
+                .attr("stroke-width", 0.8)
+                .attr("stroke-dasharray", "3,3")
+                .attr("fill", "none")
+                .attr("pointer-events", "none");
+            }
+          })
+          .on("end", function (event) {
+            console.log("Drag end:", node.name);
+            window.updateDebugStatus?.(`Drag ended: ${node.name}`);
+
+            // Get final position
+            const transform = d3.select(this).attr("transform");
+            const match = transform
+              ? /translate\(([^,]+),\s*([^)]+)\)/.exec(transform)
+              : null;
+
+            if (match) {
+              const finalX = parseFloat(match[1]);
+              const finalY = parseFloat(match[2]);
+
+              // Get the initial label position
+              const initialX = parseFloat(
+                d3.select(this).attr("data-initial-x") || "0"
+              );
+              const initialY = parseFloat(
+                d3.select(this).attr("data-initial-y") || "0"
+              );
+
+              // Calculate the offset from initial position
+              const dx = finalX - initialX;
+              const dy = finalY - initialY;
+
+              // Store the override
+              const newOverrides = new Map(labelOverrides);
+              newOverrides.set(nodeId, { dx, dy });
+              setLabelOverrides(newOverrides);
+
+              // Get node dimensions and center
+              const width = (node.x1 || 0) - (node.x0 || 0);
+              const height = (node.y1 || 0) - (node.y0 || 0);
+              const nodeX = (node.x0 || 0) + width / 2;
+              const nodeY = (node.y0 || 0) + height / 2;
+
+              // Calculate distance to determine if connector is needed
+              const distance = Math.sqrt(
+                Math.pow(nodeX - finalX, 2) + Math.pow(nodeY - finalY, 2)
+              );
+
+              // Get the current SVG parent
+              const domNode = d3.select(this).node() as SVGElement;
+              const svgParent = d3.select(domNode.ownerSVGElement);
+
+              // Remove all connector lines with this node's name
+              svgParent
+                .selectAll(`.label-connector[data-node="${node.name}"]`)
+                .remove();
+
+              // Add connector line if needed
+              const distanceThreshold = Math.min(width, height) * 0.2;
+              if (distance > distanceThreshold) {
+                svgParent
+                  .append("path")
+                  .attr("class", "label-connector")
+                  .attr("data-node", node.name)
+                  .attr("d", `M${nodeX},${nodeY} L${finalX},${finalY}`)
+                  .attr("stroke", "#ffffff")
+                  .attr("stroke-width", 0.8)
+                  .attr("stroke-dasharray", "3,3")
+                  .attr("fill", "none")
+                  .attr("pointer-events", "none");
+              }
+            }
+
+            d3.select(this).classed("dragging", false);
+          });
+
+        // Apply drag behavior
+        // @ts-ignore
+        d3.select(element).call(dragHandler);
+
+        // Also add a click handler for debugging
+        d3.select(element).on("click", function (event) {
+          console.log("Click detected on node label:", node.name);
+          window.updateDebugEvents?.(`Click: ${node.name}`);
+          event.stopPropagation();
+        });
+      });
+
+      // Add reset button in a better position
+      const resetButton = svg
+        .append("g")
+        .attr("class", "reset-button")
+        .attr("transform", `translate(30, 60)`) // Moved down more to be fully visible
+        .on("click", resetLabelOverrides);
+
+      resetButton
+        .append("rect")
+        .attr("width", 30)
+        .attr("height", 30)
+        .attr("rx", 4)
+        .attr("fill", "rgba(0, 0, 0, 0.5)")
+        .attr("stroke", "rgba(255, 255, 255, 0.6)")
+        .attr("stroke-width", 1);
+
+      resetButton
+        .append("text")
+        .attr("x", 15)
+        .attr("y", 20)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "16px")
+        .attr("fill", "white")
+        .text("↺");
+
+      resetButton.append("title").text("Reset label positions");
+
+      // Add a cleanup function to remove the debug group when component unmounts
+      return () => {
+        // Clear references
+        statusTextRef.current = null;
+        eventTextRef.current = null;
+      };
     } catch (err) {
       console.error("Error rendering Sankey diagram:", err);
       setError("Error rendering diagram");
     }
-  }, [currentLayoutState, colorConfig]);
+  }, [currentLayoutState, colorConfig, labelOverrides]); // Add labelOverrides as dependency
 
   // Backward compatibility for single frame data
   useEffect(() => {
@@ -735,6 +945,18 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
     };
   }, []);
 
+  // Remove the debug test element
+  useEffect(() => {
+    if (!svgRef.current) return;
+
+    // Old debug test element code that created the "Drag me" text
+    // This has been removed
+
+    return () => {
+      // No need to clean up anything specific
+    };
+  }, [svgRef.current]);
+
   if (error) {
     return <p className="sankey-error">Error: {error}</p>;
   }
@@ -759,6 +981,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
         style={{ overflow: "visible" }}
         viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
         preserveAspectRatio="xMidYMid meet"
+        className="sankey-diagram"
       ></svg>
     </div>
   );
