@@ -46,7 +46,7 @@ Flowturi Studio is a visualization tool for Sankey diagrams with both historical
 
 ```json
 {
-  "timestamp": "2023-05-10T15:30:00Z",
+  "timestamp": "2023-05-10 15:30:00",
   "tick": 1,
   "nodes": [
     { "id": "Source1", "label": "Source 1" },
