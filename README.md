@@ -78,6 +78,8 @@ The WebSocket stream should send data in the following format:
 }
 ```
 
+Note, the timestamp should be fairly flexible. Basically whatever works with [Javascript's](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse) `new Date(timestamp)`. To be safe you could stick with ISO 8601 or millisecond timestamps.
+
 ## Development
 
 Flowturi follows a specific design philosophy for Sankey diagrams which is documented in:
