@@ -118,6 +118,11 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
     >()
   ).current;
 
+  // Add state for link label position overrides
+  const [linkLabelOverrides, setLinkLabelOverrides] = useState<
+    Map<string, { x: number; y: number }>
+  >(new Map());
+
   const width = dimensions.width;
   const height = dimensions.height;
   const margin = { top: 5, right: 20, bottom: 5, left: 20 };
@@ -384,6 +389,62 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
         return null; // No overlap
       };
 
+      // Function to find a suitable position for a label when it overlaps
+      const findNonOverlappingPosition = (
+        box: BoundingBox,
+        centerX: number,
+        centerY: number,
+        origX: number,
+        origY: number,
+        attempts: number = 8
+      ): { x: number; y: number } => {
+        // First try keeping the original position if it doesn't overlap
+        if (!wouldOverlap(box)) {
+          return { x: origX, y: origY };
+        }
+
+        // Width and height of the box
+        const width = box.x2 - box.x1;
+        const height = box.y2 - box.y1;
+
+        // Try different directions around the original position
+        const directions = [
+          { dx: 0, dy: -height * 1.2 }, // Top
+          { dx: width * 1.2, dy: 0 }, // Right
+          { dx: 0, dy: height * 1.2 }, // Bottom
+          { dx: -width * 1.2, dy: 0 }, // Left
+          { dx: width, dy: -height }, // Top-right
+          { dx: width, dy: height }, // Bottom-right
+          { dx: -width, dy: height }, // Bottom-left
+          { dx: -width, dy: -height }, // Top-left
+        ];
+
+        // Try each direction until we find a non-overlapping position
+        for (let i = 0; i < Math.min(attempts, directions.length); i++) {
+          const dx = directions[i].dx;
+          const dy = directions[i].dy;
+
+          const newX = origX + dx;
+          const newY = origY + dy;
+
+          const newBox = {
+            x1: box.x1 + dx,
+            y1: box.y1 + dy,
+            x2: box.x2 + dx,
+            y2: box.y2 + dy,
+            priority: box.priority,
+            node: box.node,
+          };
+
+          if (!wouldOverlap(newBox)) {
+            return { x: newX, y: newY };
+          }
+        }
+
+        // If all attempts fail, return the original position
+        return { x: origX, y: origY };
+      };
+
       // Draw links first (they should be at the back)
       const link = linksGroup
         .selectAll(".link")
@@ -419,6 +480,27 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
           );
         });
 
+      // Register nodes in the occupied areas for collision detection
+      nodes.forEach((node) => {
+        if (
+          node.x0 === undefined ||
+          node.y0 === undefined ||
+          node.x1 === undefined ||
+          node.y1 === undefined
+        )
+          return;
+
+        // Add each node to occupied areas with high priority
+        occupiedAreas.push({
+          x1: node.x0,
+          y1: node.y0,
+          x2: node.x1,
+          y2: node.y1,
+          node: node.name,
+          priority: 10, // Nodes have high priority
+        });
+      });
+
       // Add link value labels only if links exist and aren't too small
       if (links.length > 0) {
         link
@@ -440,9 +522,25 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
 
               const midPoint = path.getPointAtLength(length / 2);
 
-              const g = d3
-                .select(this)
-                .attr("transform", `translate(${midPoint.x}, ${midPoint.y})`);
+              // Generate a stable ID for this link
+              const linkId = `link-${d.source}-${d.target}`;
+
+              // Create label group at the midpoint initially or use the stored override
+              const g = d3.select(this);
+
+              // Check if we have a stored position for this link label
+              const storedPosition = linkLabelOverrides.get(linkId);
+
+              if (storedPosition) {
+                // Use the stored position
+                g.attr(
+                  "transform",
+                  `translate(${storedPosition.x}, ${storedPosition.y})`
+                );
+              } else {
+                // Use the midpoint as default position
+                g.attr("transform", `translate(${midPoint.x}, ${midPoint.y})`);
+              }
 
               // Add background
               g.append("rect")
@@ -459,6 +557,81 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
                 .attr("font-size", "10px")
                 .text(d.value.toFixed(1));
 
+              // Add dragging capability to link labels
+              g.style("cursor", "move").style("pointer-events", "all");
+
+              // Create drag behavior for link labels
+              const dragHandler = d3
+                .drag()
+                .on("start", function (event) {
+                  window.updateDebugStatus?.(`Drag started: link ${linkId}`);
+                  d3.select(this).raise().classed("dragging", true);
+                })
+                .on("drag", function (event) {
+                  // Get current transform if any
+                  const transform = d3.select(this).attr("transform") || "";
+                  const match = /translate\(([^,]+),\s*([^)]+)\)/.exec(
+                    transform
+                  );
+
+                  if (!match) return; // Safety check
+
+                  // Get the current position from the transform
+                  const currentX = parseFloat(match[1]);
+                  const currentY = parseFloat(match[2]);
+
+                  // Calculate new position by adding the drag delta
+                  const newX = currentX + event.dx;
+                  const newY = currentY + event.dy;
+
+                  // Apply the new transform
+                  d3.select(this)
+                    .attr("transform", `translate(${newX}, ${newY})`)
+                    .classed("dragged", true);
+
+                  // Get the current SVG parent
+                  const domNode = d3.select(this).node() as SVGElement;
+                  const svgParent = d3.select(domNode.ownerSVGElement);
+
+                  // Remove all connector lines with this link ID to avoid duplicates
+                  svgParent
+                    .selectAll(`.link-label-connector[data-link="${linkId}"]`)
+                    .remove();
+
+                  // Add leader line from midpoint to the dragged label
+                  svgParent
+                    .append("path")
+                    .attr("class", "link-label-connector")
+                    .attr("data-link", linkId)
+                    .attr("d", `M${midPoint.x},${midPoint.y} L${newX},${newY}`)
+                    .attr("fill", "none");
+                })
+                .on("end", function (event) {
+                  window.updateDebugStatus?.(`Drag ended: link ${linkId}`);
+
+                  // Get final position
+                  const transform = d3.select(this).attr("transform");
+                  const match = transform
+                    ? /translate\(([^,]+),\s*([^)]+)\)/.exec(transform)
+                    : null;
+
+                  if (match) {
+                    const finalX = parseFloat(match[1]);
+                    const finalY = parseFloat(match[2]);
+
+                    // Store the new position in the link label overrides
+                    const newOverrides = new Map(linkLabelOverrides);
+                    newOverrides.set(linkId, { x: finalX, y: finalY });
+                    setLinkLabelOverrides(newOverrides);
+                  }
+
+                  d3.select(this).classed("dragging", false);
+                });
+
+              // Apply drag behavior
+              // @ts-ignore
+              d3.select(g.node()).call(dragHandler);
+
               // Adjust background size
               const text = g.select("text").node() as SVGTextElement;
               if (text) {
@@ -468,6 +641,103 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
                   .attr("y", bbox.y - 2)
                   .attr("width", bbox.width + 6)
                   .attr("height", bbox.height + 4);
+
+                // Only check for collision if we don't already have a stored position
+                if (!storedPosition) {
+                  // Check for collision with nodes
+                  const transform = g.attr("transform");
+                  const translateMatch = /translate\(([^,]+),\s*([^)]+)\)/.exec(
+                    transform
+                  );
+
+                  if (translateMatch) {
+                    const labelX = parseFloat(translateMatch[1]);
+                    const labelY = parseFloat(translateMatch[2]);
+
+                    const labelBox: BoundingBox = {
+                      x1: labelX + bbox.x - 3,
+                      y1: labelY + bbox.y - 2,
+                      x2: labelX + bbox.x + bbox.width + 3,
+                      y2: labelY + bbox.y + bbox.height + 2,
+                      node: linkId,
+                      priority: 5, // Links have lower priority than nodes
+                    };
+
+                    // Check if label overlaps with any node
+                    const overlapping = wouldOverlap(labelBox);
+
+                    if (overlapping) {
+                      // Find a better position for the label
+                      const newPos = findNonOverlappingPosition(
+                        labelBox,
+                        midPoint.x,
+                        midPoint.y,
+                        midPoint.x,
+                        midPoint.y
+                      );
+
+                      // Update the label position
+                      g.attr(
+                        "transform",
+                        `translate(${newPos.x}, ${newPos.y})`
+                      );
+
+                      // Store this position in the overrides map so it stays consistent across frames
+                      const newOverrides = new Map(linkLabelOverrides);
+                      newOverrides.set(linkId, { x: newPos.x, y: newPos.y });
+                      setLinkLabelOverrides(newOverrides);
+
+                      // Add a leader line from the midpoint to the new label position
+                      const svgEl = d3.select(this.ownerSVGElement);
+                      svgEl
+                        .append("path")
+                        .attr("class", "link-label-connector")
+                        .attr("data-link", linkId)
+                        .attr(
+                          "d",
+                          `M${midPoint.x},${midPoint.y} L${newPos.x},${newPos.y}`
+                        )
+                        .attr("fill", "none");
+                    } else {
+                      // If no collision, still store the midpoint position for consistency
+                      const newOverrides = new Map(linkLabelOverrides);
+                      newOverrides.set(linkId, { x: labelX, y: labelY });
+                      setLinkLabelOverrides(newOverrides);
+                    }
+                  }
+                } else {
+                  // If we're using a stored position, add the connector line
+                  const svgEl = d3.select(this.ownerSVGElement);
+                  svgEl
+                    .append("path")
+                    .attr("class", "link-label-connector")
+                    .attr("data-link", linkId)
+                    .attr(
+                      "d",
+                      `M${midPoint.x},${midPoint.y} L${storedPosition.x},${storedPosition.y}`
+                    )
+                    .attr("fill", "none");
+                }
+
+                // Register this label's position in occupiedAreas for future labels
+                const finalTransform = g.attr("transform");
+                const finalMatch = /translate\(([^,]+),\s*([^)]+)\)/.exec(
+                  finalTransform
+                );
+
+                if (finalMatch) {
+                  const finalX = parseFloat(finalMatch[1]);
+                  const finalY = parseFloat(finalMatch[2]);
+
+                  occupiedAreas.push({
+                    x1: finalX + bbox.x - 3,
+                    y1: finalY + bbox.y - 2,
+                    x2: finalX + bbox.x + bbox.width + 3,
+                    y2: finalY + bbox.y + bbox.height + 2,
+                    node: linkId,
+                    priority: 5,
+                  });
+                }
               }
             } catch (error) {
               console.warn("Error creating link label:", error);
@@ -802,7 +1072,10 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
         .append("g")
         .attr("class", "reset-button")
         .attr("transform", `translate(30, 60)`) // Moved down more to be fully visible
-        .on("click", resetLabelOverrides);
+        .on("click", () => {
+          resetLabelOverrides();
+          setLinkLabelOverrides(new Map()); // Also reset link label overrides
+        });
 
       resetButton
         .append("rect")
@@ -834,7 +1107,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
       console.error("Error rendering Sankey diagram:", err);
       setError("Error rendering diagram");
     }
-  }, [currentLayoutState, colorConfig, labelOverrides]); // Add labelOverrides as dependency
+  }, [currentLayoutState, colorConfig, labelOverrides, linkLabelOverrides]); // Add labelOverrides and linkLabelOverrides as dependencies
 
   // Backward compatibility for single frame data
   useEffect(() => {
@@ -956,6 +1229,64 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
       // No need to clean up anything specific
     };
   }, [svgRef.current]);
+
+  // Add useEffect to handle localStorage persistence
+  useEffect(() => {
+    // Save label overrides to localStorage
+    if (labelOverrides.size > 0 || linkLabelOverrides.size > 0) {
+      try {
+        // Convert Map to array of entries for storage
+        const nodeOverridesArray = Array.from(labelOverrides.entries());
+        const linkOverridesArray = Array.from(linkLabelOverrides.entries());
+
+        localStorage.setItem(
+          "flowturi-label-overrides",
+          JSON.stringify({
+            nodes: nodeOverridesArray,
+            links: linkOverridesArray,
+          })
+        );
+      } catch (err) {
+        console.warn("Failed to save label overrides:", err);
+      }
+    }
+  }, [labelOverrides, linkLabelOverrides]);
+
+  // Add useEffect to load stored overrides
+  useEffect(() => {
+    try {
+      const storedData = localStorage.getItem("flowturi-label-overrides");
+      if (storedData) {
+        const parsed = JSON.parse(storedData);
+
+        // Restore node label overrides
+        if (parsed.nodes && Array.isArray(parsed.nodes)) {
+          const restoredNodeOverrides = new Map<NodeId, LabelOverride>(
+            parsed.nodes.map(([key, value]: [string, LabelOverride]) => [
+              key,
+              value,
+            ])
+          );
+          setLabelOverrides(restoredNodeOverrides);
+        }
+
+        // Restore link label overrides
+        if (parsed.links && Array.isArray(parsed.links)) {
+          const restoredLinkOverrides = new Map<
+            string,
+            { x: number; y: number }
+          >(
+            parsed.links.map(
+              ([key, value]: [string, { x: number; y: number }]) => [key, value]
+            )
+          );
+          setLinkLabelOverrides(restoredLinkOverrides);
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to load saved label overrides:", err);
+    }
+  }, []);
 
   if (error) {
     return <p className="sankey-error">Error: {error}</p>;
