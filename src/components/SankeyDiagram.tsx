@@ -341,7 +341,6 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
                 .attr("class", "link-label")
                 .attr("dy", "0.35em")
                 .attr("text-anchor", "middle")
-                .attr("fill", "#212121")
                 .attr("font-size", "10px")
                 .text(d.value.toFixed(1));
 
@@ -350,9 +349,9 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
               if (text) {
                 const bbox = text.getBBox();
                 g.select("rect")
-                  .attr("x", bbox.x - 2)
+                  .attr("x", bbox.x - 3)
                   .attr("y", bbox.y - 2)
-                  .attr("width", bbox.width + 4)
+                  .attr("width", bbox.width + 6)
                   .attr("height", bbox.height + 4);
               }
             } catch (error) {
@@ -472,8 +471,8 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
               tempText.remove();
 
               // Calculate label dimensions with padding
-              const boxWidth = bbox.width + 6;
-              const boxHeight = bbox.height + 4;
+              const boxWidth = bbox.width + 8; // Reduced horizontal padding
+              const boxHeight = bbox.height + 4; // Reduced vertical padding
 
               // Try each position until we find one that doesn't overlap
               let foundValidPosition = false;
@@ -553,10 +552,8 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
             // Add background first
             g.append("rect")
               .attr("class", "node-label-background")
-              .attr("fill", "rgba(30, 30, 30, 0.85)")
               .attr("rx", 3)
               .attr("ry", 3)
-              .attr("stroke", "rgba(255, 255, 255, 0.25)")
               .attr("stroke-width", 0.5);
 
             // Add text
@@ -566,7 +563,6 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
               .attr("y", y)
               .attr("dy", "0.35em")
               .attr("text-anchor", textAnchor)
-              .attr("fill", "#ffffff")
               .attr("font-size", "12px")
               .text(d.name);
 
@@ -582,10 +578,10 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
                   : x - bbox.width / 2;
 
               g.select("rect")
-                .attr("x", bgX - 2)
-                .attr("y", bbox.y - 2)
-                .attr("width", bbox.width + 4)
-                .attr("height", bbox.height + 4);
+                .attr("x", bgX - 3) // Less left/right padding
+                .attr("y", bbox.y - 2) // Less top/bottom padding
+                .attr("width", bbox.width + 6) // Less horizontal padding
+                .attr("height", bbox.height + 4); // Less vertical padding
 
               // Add connector line for labels positioned away from nodes
               // Calculate the distance between the label and the node center
