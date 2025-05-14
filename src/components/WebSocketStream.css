@@ -74,6 +74,7 @@
   border: 1px solid #ccc;
   font-size: 14px;
   background-color: #fff;
+  color: #333;
   transition: border-color 0.3s;
   box-sizing: border-box;
   max-width: 100%;
@@ -257,4 +258,59 @@
     max-width: 100%;
     margin-bottom: 10px;
   }
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.checkbox-label input[type="checkbox"] {
+  margin-right: 8px;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.dark .checkbox-label {
+  color: #e0e0e0;
+}
+
+/* Add styling for the frame info container */
+.frame-info-container {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 5px;
+}
+
+.frame-info-container h4 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.dark .frame-info-container {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.frame-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.node-type-counts {
+  margin-left: 5px;
+  font-size: 0.9em;
+  color: #999;
+  white-space: nowrap;
+}
+
+.dark .node-type-counts {
+  color: #aaa;
 }

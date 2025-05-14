@@ -8,6 +8,7 @@ import {
 
 export interface FrameData {
   timestamp: string;
+  tick?: number; // Optional tick number for real-time data
   nodes: { name: string }[];
   links: { source: string; target: string; value: number }[];
 }

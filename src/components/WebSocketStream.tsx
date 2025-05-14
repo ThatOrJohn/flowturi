@@ -1,9 +1,18 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect } from "react";
+import { FrameData } from "../layout/computeLayout";
+import { useWebSocket } from "./PersistentWebSocketProvider";
 import "./WebSocketStream.css";
+
+// Constants for WebSocket configuration
+const DEFAULT_WS_URL = "ws://localhost:8082";
 
 interface WebSocketStreamProps {
   onStreamData: (data: any) => void;
+  onConnectionStatusChange?: (
+    status: "disconnected" | "connecting" | "connected" | "error"
+  ) => void;
   theme: "light" | "dark";
+  latestFrame?: FrameData | null;
 }
 
 interface StreamInfo {
@@ -15,14 +24,23 @@ interface StreamInfo {
   totalDataReceived: number;
 }
 
-const DEFAULT_WS_URL = "ws://localhost:8082";
-
 const WebSocketStream: React.FC<WebSocketStreamProps> = ({
   onStreamData,
+  onConnectionStatusChange,
   theme,
+  latestFrame,
 }) => {
+  // Use WebSocket Context
+  const {
+    connect,
+    disconnect,
+    isConnected,
+    connectionStatus,
+    error: wsError,
+    lastMessage,
+  } = useWebSocket();
+
   const [wsUrl, setWsUrl] = useState<string>(DEFAULT_WS_URL);
-  const [isConnected, setIsConnected] = useState<boolean>(false);
   const [streamInfo, setStreamInfo] = useState<StreamInfo>({
     status: "disconnected",
     messagesReceived: 0,
@@ -30,8 +48,27 @@ const WebSocketStream: React.FC<WebSocketStreamProps> = ({
     totalDataReceived: 0,
   });
 
-  const wsRef = useRef<WebSocket | null>(null);
-  const connectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Pass lastMessage from WebSocket context to onStreamData when it changes
+  useEffect(() => {
+    if (lastMessage) {
+      console.log("[WebSocketStream] Passing new message to App");
+      onStreamData(lastMessage);
+    }
+  }, [lastMessage, onStreamData]);
+
+  // Update connection status for parent component
+  useEffect(() => {
+    if (onConnectionStatusChange) {
+      onConnectionStatusChange(connectionStatus);
+    }
+
+    // Update stream info based on WebSocket context
+    setStreamInfo((prev) => ({
+      ...prev,
+      status: connectionStatus,
+      error: wsError || undefined,
+    }));
+  }, [connectionStatus, onConnectionStatusChange, wsError]);
 
   // Format bytes to human-readable format
   const formatBytes = (bytes: number): string => {
@@ -40,140 +77,72 @@ const WebSocketStream: React.FC<WebSocketStreamProps> = ({
     else return (bytes / 1048576).toFixed(1) + " MB";
   };
 
-  const connect = useCallback(() => {
-    if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) {
-      wsRef.current.close();
-    }
-
-    // Update status to connecting
-    setStreamInfo((prev) => ({
-      ...prev,
-      status: "connecting",
-      error: undefined,
-    }));
-
-    // Create a new WebSocket connection
+  // Get formatted timestamp
+  const getFormattedTimestamp = (timestamp: string) => {
     try {
-      wsRef.current = new WebSocket(wsUrl);
-
-      // Set a timeout for connection
-      if (connectTimeoutRef.current) {
-        clearTimeout(connectTimeoutRef.current);
-      }
-
-      connectTimeoutRef.current = setTimeout(() => {
-        if (wsRef.current && wsRef.current.readyState !== WebSocket.OPEN) {
-          setStreamInfo((prev) => ({
-            ...prev,
-            status: "error",
-            error:
-              "Connection timeout. Please check the WebSocket URL and try again.",
-          }));
-          wsRef.current.close();
-        }
-      }, 5000);
-
-      // WebSocket event handlers
-      wsRef.current.onopen = () => {
-        if (connectTimeoutRef.current) {
-          clearTimeout(connectTimeoutRef.current);
-          connectTimeoutRef.current = null;
-        }
-
-        setIsConnected(true);
-        setStreamInfo((prev) => ({
-          ...prev,
-          status: "connected",
-          error: undefined,
-          lastMessage: new Date(),
-        }));
-      };
-
-      wsRef.current.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          onStreamData(data);
-
-          // Update stream info
-          setStreamInfo((prev) => {
-            const messageSize = event.data.length;
-            const newTotalReceived = prev.totalDataReceived + messageSize;
-            const newCount = prev.messagesReceived + 1;
-
-            return {
-              ...prev,
-              lastMessage: new Date(),
-              messagesReceived: newCount,
-              avgMessageSize: Math.round(newTotalReceived / newCount),
-              totalDataReceived: newTotalReceived,
-            };
-          });
-        } catch (error) {
-          console.error("Error parsing WebSocket message:", error);
-          setStreamInfo((prev) => ({
-            ...prev,
-            error: "Invalid data format received",
-          }));
-        }
-      };
-
-      wsRef.current.onerror = (error) => {
-        console.error("WebSocket error:", error);
-        setIsConnected(false);
-        setStreamInfo((prev) => ({
-          ...prev,
-          status: "error",
-          error:
-            "Connection error. Please check the WebSocket URL and try again.",
-        }));
-      };
-
-      wsRef.current.onclose = () => {
-        setIsConnected(false);
-        setStreamInfo((prev) => ({
-          ...prev,
-          status: "disconnected",
-        }));
-      };
-    } catch (error) {
-      console.error("Error creating WebSocket:", error);
-      setStreamInfo((prev) => ({
-        ...prev,
-        status: "error",
-        error: "Invalid WebSocket URL. Please check the URL and try again.",
-      }));
+      const date = new Date(timestamp);
+      return date.toLocaleTimeString();
+    } catch (e) {
+      return timestamp;
     }
-  }, [wsUrl, onStreamData]);
+  };
 
-  const disconnect = useCallback(() => {
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
+  // Get node counts by type
+  const getNodeCounts = () => {
+    if (!latestFrame)
+      return { sources: 0, intermediates: 0, sinks: 0, total: 0 };
 
-    setIsConnected(false);
-    setStreamInfo((prev) => ({
-      ...prev,
-      status: "disconnected",
-    }));
-  }, []);
+    const nodes = latestFrame.nodes || [];
+    const links = latestFrame.links || [];
 
-  // Cleanup WebSocket on unmount
-  useEffect(() => {
-    return () => {
-      if (connectTimeoutRef.current) {
-        clearTimeout(connectTimeoutRef.current);
+    // Identify node types based on connections
+    const sources: string[] = [];
+    const sinks: string[] = [];
+    const intermediates: string[] = [];
+
+    // First identify source and sink nodes
+    const allNodeNames = nodes.map((n) => n.name);
+    const nodesWithIncoming = new Set(links.map((l) => l.target));
+    const nodesWithOutgoing = new Set(links.map((l) => l.source));
+
+    allNodeNames.forEach((name) => {
+      const hasIncoming = nodesWithIncoming.has(name);
+      const hasOutgoing = nodesWithOutgoing.has(name);
+
+      if (!hasIncoming && hasOutgoing) {
+        sources.push(name);
+      } else if (hasIncoming && !hasOutgoing) {
+        sinks.push(name);
+      } else {
+        intermediates.push(name);
       }
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
+    });
+
+    return {
+      sources: sources.length,
+      intermediates: intermediates.length,
+      sinks: sinks.length,
+      total: nodes.length,
     };
-  }, []);
+  };
+
+  // Calculate total flow volume
+  const getTotalFlow = () => {
+    if (!latestFrame || !latestFrame.links) return 0;
+    return latestFrame.links.reduce((sum, link) => sum + link.value, 0);
+  };
+
+  const nodeCounts = getNodeCounts();
+  const totalFlow = getTotalFlow();
 
   // Stream Configuration Panel
   const streamConfigPanel = (
     <div className={`stream-config-panel ${theme}`}>
       <h3>Stream Configuration</h3>
+      <div className="stream-info-description">
+        Enter the WebSocket URL of your data source and click Connect. The
+        WebSocket server should provide data in the expected format.
+      </div>
       <div className="stream-config-form">
         <div className="form-group">
           <label htmlFor="wsUrl">WebSocket URL:</label>
@@ -182,20 +151,27 @@ const WebSocketStream: React.FC<WebSocketStreamProps> = ({
             id="wsUrl"
             value={wsUrl}
             onChange={(e) => setWsUrl(e.target.value)}
-            placeholder="ws://localhost:8082"
+            placeholder="ws://your-data-source:port"
             disabled={isConnected}
             className={theme}
           />
+        </div>
+
+        <div className="form-group">
+          <label className="checkbox-label">
+            <input type="checkbox" checked={true} readOnly disabled={true} />
+            Auto-reconnect
+          </label>
         </div>
 
         <div className="stream-control-buttons">
           {!isConnected ? (
             <button
               className={`connect-button ${theme}`}
-              onClick={connect}
-              disabled={streamInfo.status === "connecting"}
+              onClick={() => connect(wsUrl)}
+              disabled={connectionStatus === "connecting"}
             >
-              {streamInfo.status === "connecting" ? "Connecting..." : "Connect"}
+              {connectionStatus === "connecting" ? `Connecting...` : "Connect"}
             </button>
           ) : (
             <button
@@ -205,6 +181,49 @@ const WebSocketStream: React.FC<WebSocketStreamProps> = ({
               Disconnect
             </button>
           )}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Frame Information Section
+  const frameInfoPanel = latestFrame && (
+    <div className="frame-info-container">
+      <h4>Latest Frame</h4>
+      <div className="frame-info">
+        <div className="stream-stat-item">
+          <span className="stat-label">Timestamp:</span>
+          <span className="stat-value">
+            {getFormattedTimestamp(latestFrame.timestamp)}
+          </span>
+        </div>
+
+        {latestFrame.tick !== undefined && (
+          <div className="stream-stat-item">
+            <span className="stat-label">Tick:</span>
+            <span className="stat-value">{latestFrame.tick}</span>
+          </div>
+        )}
+
+        <div className="stream-stat-item">
+          <span className="stat-label">Nodes:</span>
+          <span className="stat-value">
+            {nodeCounts.total}
+            <span className="node-type-counts">
+              ({nodeCounts.sources} src, {nodeCounts.intermediates} int,{" "}
+              {nodeCounts.sinks} sink)
+            </span>
+          </span>
+        </div>
+
+        <div className="stream-stat-item">
+          <span className="stat-label">Links:</span>
+          <span className="stat-value">{latestFrame.links?.length || 0}</span>
+        </div>
+
+        <div className="stream-stat-item">
+          <span className="stat-label">Total Flow:</span>
+          <span className="stat-value">{totalFlow.toFixed(1)}</span>
         </div>
       </div>
     </div>
@@ -232,8 +251,10 @@ const WebSocketStream: React.FC<WebSocketStreamProps> = ({
 
       <div className="stream-stats">
         <div className="stream-stat-item">
-          <span className="stat-label">Messages Received:</span>
-          <span className="stat-value">{streamInfo.messagesReceived}</span>
+          <span className="stat-label">Connection:</span>
+          <span className="stat-value">
+            {isConnected ? "Active" : "Inactive"}
+          </span>
         </div>
 
         <div className="stream-stat-item">
@@ -244,21 +265,9 @@ const WebSocketStream: React.FC<WebSocketStreamProps> = ({
               : "None"}
           </span>
         </div>
-
-        <div className="stream-stat-item">
-          <span className="stat-label">Avg. Message Size:</span>
-          <span className="stat-value">
-            {formatBytes(streamInfo.avgMessageSize)}
-          </span>
-        </div>
-
-        <div className="stream-stat-item">
-          <span className="stat-label">Total Data Received:</span>
-          <span className="stat-value">
-            {formatBytes(streamInfo.totalDataReceived)}
-          </span>
-        </div>
       </div>
+
+      {frameInfoPanel}
     </div>
   );
 

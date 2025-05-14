@@ -646,15 +646,16 @@ body.light .theme-switch .slider:after {
   margin: 0 auto;
   max-width: 100%;
   width: 100%;
-  height: 45vh;
-  min-height: 300px;
-  overflow: hidden;
+  height: 60vh;
+  min-height: 400px;
+  overflow: visible;
   position: relative;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
   border-bottom: 1px solid rgba(150, 150, 150, 0.1);
+  padding-top: 10px;
 }
 
 .sankey-view-container {
@@ -662,8 +663,8 @@ body.light .theme-switch .slider:after {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  margin-bottom: 10px;
-  max-height: 50vh;
+  margin-bottom: 5px;
+  max-height: 65vh;
 }
 
 /* Recording controls styles */
@@ -852,4 +853,17 @@ body.light .theme-switch .slider:after {
 .controls-container {
   display: flex;
   align-items: center;
+}
+
+.realtime-controls-row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  align-items: stretch;
+}
+
+@media (max-width: 768px) {
+  .realtime-controls-row {
+    flex-direction: column;
+  }
 }

@@ -1,6 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import SankeyDiagram from "./components/SankeyDiagram";
+import RealtimeSankey from "./components/RealtimeSankey";
 import ErrorBoundary from "./components/ErrorBoundary";
 import RecordButton from "./components/RecordButton";
 import ExportFrameButton from "./components/ExportFrameButton";
@@ -47,6 +48,10 @@ const App = () => {
   const [theme, setTheme] = useState<"light" | "dark">(getPreferredTheme());
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
   const [mode, setMode] = useState<Mode>(getPreferredMode());
+  const [latestFrame, setLatestFrame] = useState<FrameData | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<
+    "disconnected" | "connecting" | "connected" | "error"
+  >("disconnected");
   const speedMenuRef = useRef<HTMLDivElement>(null);
   const sankeyContainerRef = useRef<HTMLDivElement>(null);
 
@@ -120,24 +125,51 @@ const App = () => {
     setMode(newMode);
   };
 
-  // Handle WebSocket stream data
-  const handleStreamData = (data: any) => {
-    // We expect the WebSocket to send data in the same format as our Snapshot type
-    if (!data || !data.timestamp || !data.nodes || !data.links) {
-      console.error("Invalid data format from WebSocket:", data);
-      return;
+  // Handle WebSocket connection status change
+  const handleConnectionStatusChange = (
+    status: "disconnected" | "connecting" | "connected" | "error"
+  ) => {
+    setConnectionStatus(status);
+
+    // Clear data when disconnected
+    if (status === "disconnected" || status === "error") {
+      // Only clear latest frame to stop rendering, but keep historical snapshots for reviewing
+      setLatestFrame(null);
     }
-
-    // Add the new snapshot and update to show it immediately
-    setSnapshots((prev) => {
-      // Keep a reasonable number of snapshots (latest 100)
-      const newSnapshots = [...prev, data].slice(-100);
-      return newSnapshots;
-    });
-
-    // Update to show the latest snapshot
-    setCurrentIndex(snapshots.length);
   };
+
+  // Wrap the handler with useCallback to maintain reference stability
+  const handleStreamData = useCallback(
+    (data: any) => {
+      // We expect the WebSocket to send data in the same format as our Snapshot type
+      if (!data || !data.timestamp || !data.nodes || !data.links) {
+        console.error("Invalid data format from WebSocket:", data);
+        return;
+      }
+
+      // Normalize node data if using 'id' instead of 'name'
+      if (data.nodes.some((n: any) => n.id && !n.name)) {
+        data.nodes = data.nodes.map((n: any) => ({
+          ...n,
+          name: n.name || n.id,
+        }));
+      }
+
+      // For real-time mode, set the latest frame
+      setLatestFrame(data);
+
+      // Also add to snapshots for historical viewing
+      setSnapshots((prev) => {
+        // Keep a reasonable number of snapshots (latest 100)
+        const newSnapshots = [...prev, data].slice(-100);
+        return newSnapshots;
+      });
+
+      // Update to show the latest snapshot
+      setCurrentIndex(snapshots.length);
+    },
+    [snapshots.length]
+  );
 
   // Playback controls
   const handlePlayPause = () => {
@@ -557,7 +589,7 @@ const App = () => {
           <button
             onClick={handlePlayPause}
             className="control-button"
-            disabled={snapshots.length <= 1}
+            disabled={snapshots.length <= 1 || mode === "realtime"}
             title={isPlaying ? "Pause" : "Play"}
           >
             {isPlaying ? (
@@ -577,7 +609,7 @@ const App = () => {
               max={snapshots.length - 1}
               value={currentIndex}
               onChange={handleSliderChange}
-              disabled={snapshots.length <= 1}
+              disabled={snapshots.length <= 1 || mode === "realtime"}
               className="timeline-slider"
             />
             <span className="timestamp">
@@ -588,7 +620,7 @@ const App = () => {
             <button
               onClick={() => setShowSpeedMenu((prev) => !prev)}
               className="control-button"
-              disabled={snapshots.length <= 1}
+              disabled={snapshots.length <= 1 || mode === "realtime"}
               title="Playback Speed"
             >
               <svg
@@ -704,7 +736,14 @@ const App = () => {
           style={{ flex: 1 }}
         >
           <ErrorBoundary>
-            <SankeyDiagram snapshots={snapshots} currentIndex={currentIndex} />
+            {mode === "historical" ? (
+              <SankeyDiagram
+                snapshots={snapshots}
+                currentIndex={currentIndex}
+              />
+            ) : (
+              <RealtimeSankey latestFrame={latestFrame} theme={theme} />
+            )}
           </ErrorBoundary>
         </div>
       </div>
@@ -719,7 +758,14 @@ const App = () => {
             {fileInfoPanel}
           </>
         ) : (
-          <WebSocketStream onStreamData={handleStreamData} theme={theme} />
+          <div className="realtime-controls-row">
+            <WebSocketStream
+              onStreamData={handleStreamData}
+              onConnectionStatusChange={handleConnectionStatusChange}
+              theme={theme}
+              latestFrame={latestFrame}
+            />
+          </div>
         )}
       </div>
     );
