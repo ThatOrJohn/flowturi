@@ -256,15 +256,6 @@ const WebSocketStream: React.FC<WebSocketStreamProps> = ({
             {isConnected ? "Active" : "Inactive"}
           </span>
         </div>
-
-        <div className="stream-stat-item">
-          <span className="stat-label">Last Message:</span>
-          <span className="stat-value">
-            {streamInfo.lastMessage
-              ? streamInfo.lastMessage.toLocaleTimeString()
-              : "None"}
-          </span>
-        </div>
       </div>
 
       {frameInfoPanel}
