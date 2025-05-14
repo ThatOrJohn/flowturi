@@ -58,7 +58,7 @@ The WebSocket stream should send data in the following format:
 
 ## Data Format
 
-Both historical and real-time modes expect data in the following format:
+Both historical mode expects data in the following format:
 
 ```json
 {
@@ -70,6 +70,12 @@ Both historical and real-time modes expect data in the following format:
   ],
   "links": [{ "source": "Source1", "target": "Target1", "value": 10 }]
 }
+```
+
+```csv
+timestamp,source,target,value
+2025-05-10 00:00:00,Crude Tank,Desalter,456.7
+2025-05-10 00:00:00,Desalter,Heater,277.04
 ```
 
 ## Development
