@@ -1,5 +1,7 @@
 export interface Node {
   name: string;
+  id?: string;
+  label?: string;
 }
 
 export interface Link {
@@ -22,4 +24,4 @@ export interface FileInfo {
   snapshots?: number;
   nodes?: number;
   links?: number;
-} 
+}

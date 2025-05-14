@@ -1,68 +1,86 @@
-# Flowturi
+# Flowturi Studio
 
-## Dynamic Sankey Flow Visualizer
-
-A live-updating, animated [Sankey diagram](https://en.wikipedia.org/wiki/Sankey_diagram) built with D3.js and Vite — designed to be flexible for storytelling, monitoring, and exploratory data analysis.
+Flowturi Studio is a visualization tool for Sankey diagrams with both historical and real-time capabilities.
 
 ## Features
 
-- 🔄 Smooth animations between states
-- 📈 Supports pre-recorded data (real-time to be added)
-- 🎛️ Play/Pause/Speed controls
-- 🧠 Auto-generates layout from input nodes and links
-- 💡 No hardcoded structure — works with new or unknown nodes
-
-## Demo
-
-![Flowturi animation](assets/FlowturiDemo.gif)
+- Visualize energy or resource flows in a Sankey diagram
+- Historical mode: upload and analyze JSON or CSV time-series data
+- Real-time mode: connect to WebSocket streams for live data visualization
+- Responsive design with light and dark themes
+- Stable and consistent node positioning following design philosophy
 
 ## Getting Started
 
-Clone the repo and install dependencies:
+1. Install dependencies:
 
-```bash
-git clone https://github.com/ThatOrJohn/flowturi.git
-cd flowturi
-npm install
-```
+   ```
+   npm install
+   ```
 
-## Development
+2. Start the development server:
 
-To start the development server (assumes Node v20+):
+   ```
+   npm run dev
+   ```
 
-```bash
-npm run dev
-```
+3. Open your browser to the URL displayed in the terminal (typically http://localhost:5173)
 
-This will start the Vite development server at http://localhost:5173.
+## Using Historical Mode
 
-## Building for Production
+1. Select "Historical" in the mode toggle at the top of the application
+2. Upload a JSON or CSV file with time-series Sankey data
+3. Use the playback controls to navigate through the data frames
 
-To create a production build:
+## Using Real-Time Mode
 
-```bash
-npm run build
-```
+1. Select "Real-Time" in the mode toggle at the top of the application
+2. Enter the WebSocket URL of your data source in the WebSocket URL field
+3. Click "Connect" to establish the WebSocket connection
+4. The Sankey diagram will automatically update as new data arrives
+5. Enable "Auto-reconnect" to automatically reconnect if the connection is lost
 
-The built files will be in the `dist` directory.
+### Expected WebSocket Data Format
 
-To preview the production build:
+The WebSocket stream should send data in the following format:
 
-```bash
-npm run preview
+```json
+{
+  "timestamp": "2023-05-10T15:30:00Z",
+  "tick": 1,
+  "nodes": [
+    { "id": "Source1", "label": "Source 1" },
+    { "id": "Target1", "label": "Target 1" }
+  ],
+  "links": [{ "source": "Source1", "target": "Target1", "value": 10 }]
+}
 ```
 
 ## Data Format
 
-Each frame should include:
+Both historical and real-time modes expect data in the following format:
 
 ```json
 {
-  "timestamp": "2025-05-08 11:22:56",
-  "nodes": [{ "name": "Reactor" }, ...],
-  "links": [{ "source": "Pump", "target": "Reactor", "value": 10 }, ...]
+  "timestamp": "2023-05-10T15:30:00Z",
+  "tick": 1,
+  "nodes": [
+    { "id": "Source1", "label": "Source 1" },
+    { "id": "Target1", "label": "Target 1" }
+  ],
+  "links": [{ "source": "Source1", "target": "Target1", "value": 10 }]
 }
 ```
+
+## Development
+
+Flowturi follows a specific design philosophy for Sankey diagrams which is documented in:
+
+- `docs/sankey-philosophy.md`
+- `docs/sankey-layout-strategy.md`
+
+The real-time mode implementation follows the strategy outlined in these documents to ensure stability,
+readability, and smooth transitions.
 
 ## License
 
