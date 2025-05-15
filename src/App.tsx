@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import SankeyDiagram from "./components/SankeyDiagram";
 import RealtimeSankey from "./components/RealtimeSankey";
@@ -12,8 +12,23 @@ import { Snapshot, FileInfo } from "./types";
 import { FrameData } from "./layout/computeLayout";
 import "./App.css";
 
-const THEME_KEY = "flowturi-theme";
-const MODE_KEY = "flowturi-mode";
+// Environment variables
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === "true" || false;
+console.log("DEMO_MODE value:", DEMO_MODE);
+
+// Constants
+const MODE_KEY = "flowturi-preferred-mode";
+const THEME_KEY = "flowturi-preferred-theme";
+
+// Demo mode test files
+const TEST_DATA_FILES = [
+  {
+    name: "cloud-compute-burst.json",
+    path: "/test-data/cloud-compute-burst.json",
+  },
+  { name: "oil-refinery-flow.csv", path: "/test-data/oil-refinery-flow.csv" },
+  { name: "fanout-fanin-test.csv", path: "/test-data/fanout-fanin-test.csv" },
+];
 
 const getPreferredTheme = (): "light" | "dark" => {
   // Check localStorage first
@@ -55,11 +70,21 @@ const App = () => {
   const speedMenuRef = useRef<HTMLDivElement>(null);
   const sankeyContainerRef = useRef<HTMLDivElement>(null);
 
+  // Reference to the reset labels function
+  const resetLabelsRef = useRef<(() => void) | null>(null);
+
   // Apply theme to <body> for full-page theming
   useEffect(() => {
     document.body.className = theme;
     localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
+
+  // Update document title to show demo mode status
+  useEffect(() => {
+    document.title = DEMO_MODE
+      ? "Flowturi - Demo Mode Enabled"
+      : "Flowturi Studio";
+  }, []);
 
   // Save mode preference
   useEffect(() => {
@@ -540,6 +565,85 @@ const App = () => {
     </div>
   );
 
+  // Load test data file from public directory
+  const loadTestDataFile = async (filePath: string) => {
+    try {
+      const response = await fetch(filePath);
+      if (!response.ok) {
+        throw new Error(`Failed to load file: ${response.statusText}`);
+      }
+
+      const contentType = response.headers.get("content-type");
+      let fileContent;
+
+      if (contentType && contentType.includes("application/json")) {
+        fileContent = await response.json();
+        processJsonData(fileContent, filePath.split("/").pop() || "");
+      } else {
+        fileContent = await response.text();
+        const file = new File([fileContent], filePath.split("/").pop() || "", {
+          type: filePath.endsWith(".csv") ? "text/csv" : "application/json",
+        });
+        handleFileUpload(file);
+      }
+    } catch (error) {
+      setError(`Error loading test data: ${(error as Error).message}`);
+    }
+  };
+
+  // Process JSON data directly
+  const processJsonData = (jsonData: any, fileName: string) => {
+    try {
+      if (!Array.isArray(jsonData) || jsonData.length === 0) {
+        throw new Error("JSON must be an array of snapshots.");
+      }
+
+      // Set file info
+      setFileInfo({
+        name: fileName,
+        size: JSON.stringify(jsonData).length,
+        type: "application/json",
+        lastModified: new Date().toLocaleString(),
+        snapshots: jsonData.length,
+        nodes: jsonData[0]?.nodes.length || 0,
+        links: jsonData[0]?.links.length || 0,
+      });
+
+      setSnapshots(jsonData);
+      setCurrentIndex(0);
+      setIsPlaying(false);
+      setError(null);
+    } catch (err) {
+      setError(`Invalid file format: ${(err as Error).message}`);
+      setSnapshots([]);
+    }
+  };
+
+  // Demo mode test data component
+  const demoModeSection = (
+    <div className={`demo-mode-section ${theme}`}>
+      <h3>Demo Data</h3>
+      <div className="demo-files-container">
+        {TEST_DATA_FILES.map((file) => (
+          <button
+            key={file.name}
+            className={`demo-file-button ${theme}`}
+            onClick={() => loadTestDataFile(file.path)}
+          >
+            {file.name}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  // Function to handle reset labels button click
+  const handleResetLabels = () => {
+    if (resetLabelsRef.current) {
+      resetLabelsRef.current();
+    }
+  };
+
   // Render different content based on mode
   const renderContent = () => {
     if (error) {
@@ -550,6 +654,9 @@ const App = () => {
               <>
                 {fileUploadInput}
                 {fileInfoPanel}
+                {DEMO_MODE && (
+                  <div className="demo-mode-container">{demoModeSection}</div>
+                )}
               </>
             ) : (
               <WebSocketStream onStreamData={handleStreamData} theme={theme} />
@@ -568,6 +675,9 @@ const App = () => {
               <>
                 {fileUploadInput}
                 {fileInfoPanel}
+                {DEMO_MODE && (
+                  <div className="demo-mode-container">{demoModeSection}</div>
+                )}
               </>
             ) : (
               <WebSocketStream onStreamData={handleStreamData} theme={theme} />
@@ -740,6 +850,7 @@ const App = () => {
               <SankeyDiagram
                 snapshots={snapshots}
                 currentIndex={currentIndex}
+                resetLabelsRef={resetLabelsRef}
               />
             ) : (
               <RealtimeSankey latestFrame={latestFrame} theme={theme} />
@@ -753,10 +864,18 @@ const App = () => {
     const bottomRow = (
       <div className="file-control-row" style={{ marginTop: "5px" }}>
         {mode === "historical" ? (
-          <>
-            {fileUploadInput}
-            {fileInfoPanel}
-          </>
+          (() => {
+            console.log("Rendering historical mode, DEMO_MODE =", DEMO_MODE);
+            return (
+              <>
+                {fileUploadInput}
+                {fileInfoPanel}
+                {DEMO_MODE && (
+                  <div className="demo-mode-container">{demoModeSection}</div>
+                )}
+              </>
+            );
+          })()
         ) : (
           <div className="realtime-controls-row">
             <WebSocketStream
@@ -786,9 +905,21 @@ const App = () => {
         <div className="app-header-controls">
           <ModeToggle currentMode={mode} onModeChange={handleModeChange} />
           {themeToggleSwitch}
+          {DEMO_MODE && <div className="demo-mode-indicator">DEMO MODE</div>}
         </div>
       </div>
       {renderContent()}
+
+      {/* Fixed position reset button */}
+      {mode === "historical" && snapshots.length > 0 && (
+        <button
+          className={`fixed-reset-button ${theme}`}
+          onClick={handleResetLabels}
+          title="Reset all node and link label positions to default"
+        >
+          <span className="reset-icon">↺</span> Reset Labels
+        </button>
+      )}
     </div>
   );
 };

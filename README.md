@@ -7,6 +7,7 @@ Flowturi Studio is a visualization tool for Sankey diagrams with both historical
 - Visualize energy or resource flows in a Sankey diagram
 - Historical mode: upload and analyze JSON or CSV time-series data
 - Real-time mode: connect to WebSocket streams for live data visualization
+- Demo mode: easily load sample data files for demonstration
 - Responsive design with light and dark themes
 - Stable and consistent node positioning following design philosophy
 
@@ -36,6 +37,16 @@ Flowturi Studio is a visualization tool for Sankey diagrams with both historical
 2. Upload a JSON or CSV file with time-series Sankey data
 3. Use the playback controls to navigate through the data frames
 
+### Demo Mode
+
+Flowturi includes a demo mode that allows easy loading of sample data files:
+
+1. Enable demo mode by setting the `VITE_DEMO_MODE=true` environment variable
+2. Sample data files will appear below the file upload section in Historical mode
+3. Click any sample file to load it into the visualization
+
+See [Demo Mode Documentation](docs/demo-mode.md) for more details.
+
 ## Using Real-Time Mode
 
 1. Select "Real-Time" in the mode toggle at the top of the application
@@ -46,7 +57,7 @@ Flowturi Studio is a visualization tool for Sankey diagrams with both historical
 
 ### Flowturi Real-Time Sandbox
 
-Want to test Flowturi's Real-Time mode with some synthetic data? Check out the [flowturi-realtime-sandbox](https://github.com/ThatOrJohn/flowturi-realtime-sandbox) repo! It’s a handy setup that generates test data and streams it to WebSocket clients. The sandbox uses **Docker Compose to spin up all the services** (including Node.js, Apache Flink, and Kafka, depending on your mode).
+Want to test Flowturi's Real-Time mode with some synthetic data? Check out the [flowturi-realtime-sandbox](https://github.com/ThatOrJohn/flowturi-realtime-sandbox) repo! It's a handy setup that generates test data and streams it to WebSocket clients. The sandbox uses **Docker Compose to spin up all the services** (including Node.js, Apache Flink, and Kafka, depending on your mode).
 
 ## Data Format
 
