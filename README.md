@@ -80,6 +80,29 @@ The WebSocket stream should send data in the following format:
 
 Note, the timestamp should be fairly flexible. Basically whatever works with [Javascript's](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse) `new Date(timestamp)`. To be safe you could stick with ISO 8601 or millisecond timestamps.
 
+### Real-Time Mode Behavior and Best Practices
+
+#### How Real-Time Updates Work
+
+- Each WebSocket message is processed independently as it arrives
+- The Sankey diagram shows the most recent data frame without aggregation
+- Frame transitions use smoothing to maintain visual stability between updates
+- Up to 100 most recent frames are retained in memory for historical review
+
+#### Recommendations for Optimal Results
+
+- **Update Frequency**: Send data at a rate appropriate for human perception (1-5 updates per second is typically sufficient)
+- **Data Aggregation**: For rapidly changing metrics, consider aggregating data on the server side before sending
+- **Consistent Node Structure**: Try to maintain a consistent set of nodes across updates to prevent excessive visual reorganization
+- **Batching**: For high-frequency sources, batch data over a reasonable interval (e.g., 200-500ms) to avoid overwhelming the visualization
+- **Tick Property**: Use the optional `tick` property to help the visualization engine track frame sequencing
+
+#### Performance Considerations
+
+- Very high update frequencies (>10 frames/second) may cause rendering performance issues
+- Extremely large node/link structures (>100 nodes) may impact responsiveness
+- Responsiveness will vary based on the client's hardware capabilities
+
 ## Development
 
 Flowturi follows a specific design philosophy for Sankey diagrams which is documented in:
