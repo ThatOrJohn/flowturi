@@ -325,12 +325,24 @@ body.light .link-label-group .link-label-background {
 /* Reset button styles */
 .reset-button {
   cursor: pointer;
-  opacity: 0.7;
-  transition: opacity 0.2s;
+  transition: all 0.3s ease;
+  opacity: 1;
+  z-index: 100; /* Ensure it's on top of other elements */
 }
 
-.reset-button:hover {
-  opacity: 1;
+.reset-button rect {
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
+}
+
+.reset-button:hover rect {
+  fill: rgba(40, 40, 40, 0.9);
+  stroke: rgba(255, 255, 255, 1);
+  filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.6));
+}
+
+.reset-button:active rect {
+  fill: rgba(60, 60, 60, 0.95);
+  transform: translateY(1px);
 }
 
 .link-label-connector {

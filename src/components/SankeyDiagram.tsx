@@ -68,6 +68,7 @@ interface SankeyDiagramProps {
   data?: SankeyData | null;
   snapshots?: FrameData[]; // Added for multiple frames
   currentIndex?: number; // Current frame index
+  resetLabelsRef?: React.MutableRefObject<(() => void) | null>; // Add ref for reset function
 }
 
 // Extend the Window interface to include our debug functions
@@ -82,6 +83,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
   data,
   snapshots = [],
   currentIndex = 0,
+  resetLabelsRef,
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -237,7 +239,20 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
   // Function to reset all label overrides
   const resetLabelOverrides = () => {
     setLabelOverrides(new Map());
+    setLinkLabelOverrides(new Map());
   };
+
+  // Expose the reset function to the parent component through the ref
+  useEffect(() => {
+    if (resetLabelsRef) {
+      resetLabelsRef.current = resetLabelOverrides;
+    }
+    return () => {
+      if (resetLabelsRef) {
+        resetLabelsRef.current = null;
+      }
+    };
+  }, [resetLabelsRef, setLabelOverrides, setLinkLabelOverrides]);
 
   // Function to get node ID from node object
   const getNodeId = (node: Node): NodeId => {
@@ -1067,36 +1082,6 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
         });
       });
 
-      // Add reset button in a better position
-      const resetButton = svg
-        .append("g")
-        .attr("class", "reset-button")
-        .attr("transform", `translate(30, 60)`) // Moved down more to be fully visible
-        .on("click", () => {
-          resetLabelOverrides();
-          setLinkLabelOverrides(new Map()); // Also reset link label overrides
-        });
-
-      resetButton
-        .append("rect")
-        .attr("width", 30)
-        .attr("height", 30)
-        .attr("rx", 4)
-        .attr("fill", "rgba(0, 0, 0, 0.5)")
-        .attr("stroke", "rgba(255, 255, 255, 0.6)")
-        .attr("stroke-width", 1);
-
-      resetButton
-        .append("text")
-        .attr("x", 15)
-        .attr("y", 20)
-        .attr("text-anchor", "middle")
-        .attr("font-size", "16px")
-        .attr("fill", "white")
-        .text("↺");
-
-      resetButton.append("title").text("Reset label positions");
-
       // Add a cleanup function to remove the debug group when component unmounts
       return () => {
         // Clear references
@@ -1309,7 +1294,10 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
         ref={svgRef}
         width={dimensions.width}
         height={dimensions.height}
-        style={{ overflow: "visible" }}
+        style={{
+          overflow: "visible",
+          padding: "10px", // Add padding to ensure button isn't clipped
+        }}
         viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
         preserveAspectRatio="xMidYMid meet"
         className="sankey-diagram"
