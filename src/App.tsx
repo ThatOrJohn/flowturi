@@ -10,6 +10,7 @@ import WebSocketStream from "./components/WebSocketStream";
 import Papa from "papaparse";
 import { Snapshot, FileInfo } from "./types";
 import { FrameData } from "./layout/computeLayout";
+import Footer from "./components/Footer";
 import "./App.css";
 
 // Environment variables
@@ -920,6 +921,8 @@ const App = () => {
           <span className="reset-icon">↺</span> Reset Labels
         </button>
       )}
+
+      <Footer theme={theme} />
     </div>
   );
 };
