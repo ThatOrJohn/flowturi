@@ -40,6 +40,10 @@ Flowturi Studio is a visualization tool for Sankey diagrams with both historical
 4. The Sankey diagram will automatically update as new data arrives
 5. Enable "Auto-reconnect" to automatically reconnect if the connection is lost
 
+### Flowturi Real-Time Sandbox
+
+Want to test Flowturi's Real-Time mode with some synthetic data? Check out the [flowturi-realtime-sandbox](https://github.com/ThatOrJohn/flowturi-realtime-sandbox) repo! It’s a handy setup that generates test data and streams it to WebSocket clients. The sandbox uses **Docker Compose to spin up all the services** (including Node.js, Apache Flink, and Kafka, depending on your mode).
+
 ## Data Format
 
 ### Historical mode expects data in the following format:
