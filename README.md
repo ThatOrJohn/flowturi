@@ -1,6 +1,6 @@
 # Flowturi Studio
 
-Flowturi Studio is a visualization tool for Sankey diagrams with both historical and real-time capabilities.
+Flowturi Studio is a visualization tool for animated Sankey diagrams with both historical and real-time capabilities.
 
 ## Features
 
@@ -10,6 +10,7 @@ Flowturi Studio is a visualization tool for Sankey diagrams with both historical
 - Demo mode: easily load sample data files for demonstration
 - Responsive design with light and dark themes
 - Stable and consistent node positioning following design philosophy
+- Export WebM animations or PNG single frames
 
 ## Demo
 
