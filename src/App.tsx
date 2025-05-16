@@ -795,12 +795,7 @@ const App = () => {
             ) : mode === "realtime" && latestFrame ? (
               <RealtimeSankey latestFrame={latestFrame} theme={theme} />
             ) : (
-              <div className="empty-sankey-placeholder">
-                <img
-                  src="assets/images/logo/flowturi-small.png"
-                  className="splash"
-                />
-              </div>
+              <div className="empty-sankey-placeholder"></div>
             )}
           </ErrorBoundary>
         </div>
