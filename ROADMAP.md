@@ -7,7 +7,7 @@
 - **Purpose**: A tool to visualize information flows using Sankey diagrams, supporting historical (storytelling, EDA) and real-time (monitoring, observability) modes.
 - **Target Deliverables**:
   - Open-source library for Sankey diagram visualization.
-  - (Future) Platform with managed infrastructure (e.g., cloud-hosted, premium connectors).
+  - (Future) Platform with managed infrastructure (e.g., cloud-hosted, premium connectors)?
 - **Intended Users**: Data analysts, developers, DevOps engineers, support, business intelligence teams.
 
 ## 2. Current State
@@ -28,25 +28,24 @@
 
 ### 4.1 Short-Term Goals (1-3 months)
 
-- Convert toy repo to a modern framework (e.g., Vite + React/Vue/Svelte, TypeScript optional).
-- Flowturi Studio interface (file upload, display/format Sankey animation).
-- Common video controls for historical mode (e.g., progress bar, playback speed).
-- Improve layout stability.
-- Basic interactivity (tooltips, zoom).
-- Styling options for nodes and links.
-- Implement modular data connectors:
-  - Static: CSV, JSON.
-  - Database: PostgreSQL, SQLite.
-- Publish as @flowturi/core?
+- [x] Convert toy repo to a modern framework (e.g., Vite + React/Vue/Svelte, TypeScript optional).
+- [x] Flowturi Studio interface (file upload, display/format Sankey animation).
+- [x] Common video controls for historical mode (e.g., progress bar, playback speed).
+- [x] Improve layout stability.
+- [ ] Basic interactivity (tooltips, zoom).
+- [ ] Styling options for nodes and links.
+- [ ] Implement modular data connectors:
+  - [ ] Static: CSV, JSON.
+  - [ ] Database: PostgreSQL, SQLite.
 
 ## 4.2 Medium-Term Goals
 
-- Historical mode: database queries.
-- Real-time mode: Live WebSocket updates.
-- Documentation and demos.
+- [ ] Historical mode: database queries.
+- [x] Real-time mode: Live WebSocket updates.
+- [ ] Documentation and demos.
 
 ## 4.3 Long-Term Goals
 
-- Platform: Hosted infra, premium connectors.
-- Scalability for large datasets.
-- Community plugins.
+- [ ] Platform: Hosted infra, premium connectors.
+- [ ] Scalability for large datasets.
+- [ ] Community plugins.
