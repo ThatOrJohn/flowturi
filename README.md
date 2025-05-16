@@ -42,7 +42,7 @@ Flowturi Studio is a visualization tool for Sankey diagrams with both historical
 Flowturi includes a demo mode that allows easy loading of sample data files:
 
 1. Enable demo mode by setting the `VITE_DEMO_MODE=true` environment variable
-2. Sample data files will appear below the file upload section in Historical mode
+2. Sample data files will appear below the file upload section
 3. Click any sample file to load it into the visualization
 
 See [Demo Mode Documentation](docs/demo-mode.md) for more details.
@@ -97,7 +97,7 @@ The WebSocket stream should send data in the following format:
 }
 ```
 
-Note, the timestamp should be fairly flexible. Basically whatever works with [Javascript's](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse) `new Date(timestamp)`. To be safe you could stick with ISO 8601 or millisecond timestamps.
+Note, the timestamp should be fairly flexible. Basically, whatever works with [Javascript's](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse) `new Date(timestamp)`. To be safe you could stick with ISO 8601 or millisecond timestamps.
 
 ### Real-Time Mode Behavior and Best Practices
 
