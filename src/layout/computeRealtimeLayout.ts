@@ -179,19 +179,19 @@ export function computeRealtimeLayout(
   const margins = {
     top: 20,
     bottom: 20,
-    left: 30,
-    right: 30,
+    left: 20,
+    right: 20,
   };
 
   const usableHeight = height - margins.top - margins.bottom;
   const usableWidth = width - margins.left - margins.right;
-  const nodeWidth = 20;
-  const nodePadding = 10;
+  const nodeWidth = 40; // Increased for consistency
+  const nodePadding = 20; // Increased for consistency
 
   // Determine node heights based on values
   const layerCount = Math.max(...allLayers) + 1;
-  const maxNodeHeight = Math.min(100, Math.floor(usableHeight / 5)); // Max node height limited
-  const minNodeHeight = 15;
+  const maxNodeHeight = Math.min(140, Math.floor(usableHeight / 2)); // Don't let nodes get too tall
+  const minNodeHeight = 20;
 
   // Distribute layers evenly across x-axis
   const xPositions = new Map<number, number>();
@@ -248,8 +248,7 @@ export function computeRealtimeLayout(
     // Center the nodes vertically in the available space
     const verticalOffset = Math.max(0, (usableHeight - totalNodesHeight) / 2);
 
-    // Calculate node heights with smoothing applied
-    // Start at the top margin plus vertical centering offset
+    // Place nodes starting at the top margin plus vertical centering offset
     let y = margins.top + verticalOffset;
 
     nodes.forEach((nodeName, index) => {

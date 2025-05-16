@@ -1,15 +1,17 @@
 .stream-config-panel {
   background-color: #f8f9fa;
   border-radius: 12px;
-  padding: 16px;
+  padding: 12px;
   border: 1px solid #ebebeb;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   height: 100%;
   display: flex;
   flex-direction: column;
   flex: 1;
-  max-width: 400px;
+  max-width: 45%;
+  min-width: 300px;
   overflow: hidden;
+  margin-bottom: 0;
 }
 
 .stream-config-panel.dark {
@@ -21,13 +23,16 @@
 .stream-info-panel {
   background-color: #f8f9fa;
   border-radius: 12px;
-  padding: 16px;
+  padding: 12px;
   border: 1px solid #ebebeb;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   height: 100%;
   display: flex;
   flex-direction: column;
   flex: 1;
+  max-width: 55%;
+  min-width: 300px;
+  margin-bottom: 0;
 }
 
 .stream-info-panel.dark {
@@ -39,10 +44,10 @@
 .stream-config-panel h3,
 .stream-info-panel h3 {
   margin-top: 0;
-  margin-bottom: 16px;
-  font-size: 18px;
+  margin-bottom: 10px;
+  font-size: 16px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  padding-bottom: 10px;
+  padding-bottom: 8px;
 }
 
 .stream-config-panel.dark h3,
@@ -56,23 +61,23 @@
 }
 
 .form-group {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   width: 100%;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 3px;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .form-group input {
   width: 100%;
-  padding: 10px 12px;
+  padding: 6px 10px;
   border-radius: 6px;
   border: 1px solid #ccc;
-  font-size: 14px;
+  font-size: 13px;
   background-color: #fff;
   color: #333;
   transition: border-color 0.3s;
@@ -106,25 +111,27 @@
   margin-top: 12px;
 }
 
-.connect-button,
-.disconnect-button {
-  padding: 10px 16px;
+.connect-button {
+  padding: 8px 12px;
   border-radius: 6px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   border: none;
-  font-size: 14px;
+  font-size: 13px;
   width: 100%;
-}
-
-.connect-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   background-color: #4a90e2;
   color: white;
 }
 
 .connect-button:hover {
   background-color: #3a80d2;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
 }
 
 .connect-button:disabled {
@@ -133,12 +140,26 @@
 }
 
 .disconnect-button {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-size: 13px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   background-color: #e74c3c;
   color: white;
 }
 
 .disconnect-button:hover {
   background-color: #d73c2c;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
 }
 
 .connect-button.dark,
@@ -157,7 +178,7 @@
 }
 
 .stream-status {
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .status-indicator {
@@ -203,28 +224,39 @@
 }
 
 .stream-stats {
-  background-color: rgba(0, 0, 0, 0.03);
-  border-radius: 8px;
-  padding: 12px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.stream-stats.dark {
-  background-color: rgba(255, 255, 255, 0.05);
+  display: none; /* Hide it completely */
 }
 
 .stream-stat-item {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
-  font-size: 14px;
+  margin-bottom: 2px;
+  font-size: 13px;
   white-space: nowrap;
   overflow: hidden;
+  padding: 3px 8px;
+  border-radius: 3px;
 }
 
 .stream-stat-item:last-child {
   margin-bottom: 0;
+  padding-bottom: 4px;
+}
+
+.stream-stat-item:nth-child(odd) {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.dark .stream-stat-item:nth-child(odd) {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.stream-stat-item:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+.dark .stream-stat-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
 .stat-label {
@@ -233,6 +265,7 @@
   flex-shrink: 0;
   margin-right: 16px;
   min-width: 140px;
+  text-align: left;
 }
 
 .stat-value {
@@ -241,6 +274,7 @@
   text-align: right;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-weight: 500;
 }
 
 .dark .stat-label {
@@ -249,6 +283,15 @@
 
 .dark .stat-value {
   color: #e0e0e0;
+  font-weight: 500;
+}
+
+.dark .node-type-counts {
+  color: #bbb;
+}
+
+.dark .stream-stats {
+  background-color: rgba(255, 255, 255, 0.07);
 }
 
 @media (max-width: 768px) {
@@ -279,29 +322,41 @@
   color: #e0e0e0;
 }
 
-/* Add styling for the frame info container */
+/* Enhance frame-info-container */
 .frame-info-container {
-  margin-top: 15px;
-  padding: 10px;
-  background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 5px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .frame-info-container h4 {
   margin-top: 0;
   margin-bottom: 8px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
+  color: #333;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding-bottom: 6px;
 }
 
 .dark .frame-info-container {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .frame-info-container h4 {
+  color: #ddd;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
 .frame-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .node-type-counts {
@@ -309,8 +364,4 @@
   font-size: 0.9em;
   color: #999;
   white-space: nowrap;
-}
-
-.dark .node-type-counts {
-  color: #aaa;
 }

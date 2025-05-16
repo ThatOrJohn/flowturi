@@ -127,7 +127,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
 
   const width = dimensions.width;
   const height = dimensions.height;
-  const margin = { top: 5, right: 20, bottom: 5, left: 20 };
+  const margin = { top: 5, right: 5, bottom: 5, left: 5 };
 
   // Helper function to generate a position key for a node
   const getPositionKey = (node: Node): string => {
@@ -1292,11 +1292,13 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
     >
       <svg
         ref={svgRef}
-        width={dimensions.width}
-        height={dimensions.height}
+        width="100%"
+        height="100%"
         style={{
-          overflow: "visible",
-          padding: "10px", // Add padding to ensure button isn't clipped
+          display: "block",
+          overflow: "hidden",
+          margin: "0 auto",
+          maxHeight: "100%",
         }}
         viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
         preserveAspectRatio="xMidYMid meet"
