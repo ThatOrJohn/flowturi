@@ -139,29 +139,19 @@ export function computeLayout(
     value: link.value,
   }));
 
-  // Adjust margins based on chart size and node count
-  // Use smaller margins, especially at the top, to maximize usable space
-  const nodeCount = allNodes.size;
-  const marginScalingFactor = Math.max(0.05, Math.min(0.12, 10 / nodeCount));
+  // Layout configuration
   const margins = {
-    left: Math.max(40, Math.round(width * marginScalingFactor)),
-    right: Math.max(40, Math.round(width * marginScalingFactor)),
-    top: Math.max(30, Math.round(height * 0.05)), // Increased to ensure content isn't too high
-    bottom: Math.max(30, Math.round(height * 0.05)), // Ensure equal margins top and bottom for centering
+    top: 20, // Reduced top margin
+    bottom: 20, // Reduced bottom margin
+    left: 20, // Reduced left margin
+    right: 20, // Reduced right margin
   };
 
-  // Adjust node width and padding based on chart dimensions
-  const nodeWidth = Math.min(28, Math.max(15, Math.round(width / 45)));
-
-  // Calculate padding based on available height and node count
-  // With smaller padding for many nodes, larger padding for few nodes
+  const usableWidth = width - margins.left - margins.right;
   const usableHeight = height - margins.top - margins.bottom;
-  const avgNodesPerLayer =
-    nodeCount / (Math.max(...fullNodes.map((n) => n.index || 0)) + 1);
-  const nodePadding = Math.max(
-    8, // Minimum padding
-    Math.min(25, Math.floor(usableHeight / (avgNodesPerLayer * 2.5)))
-  );
+
+  const nodeWidth = 40; // Increased node width (was likely 20-30)
+  const nodePadding = 20; // Increased padding between nodes
 
   // Calculate layers using d3-sankey
   const tempSankey = d3Sankey<Node, Link>()
@@ -247,7 +237,7 @@ export function computeLayout(
   const nodeHeights = new Map<string, number>();
 
   // Base minimum node height on chart dimensions
-  const minNodeHeight = Math.max(15, Math.min(30, Math.floor(height / 20)));
+  const minNodeHeight = Math.max(18, Math.round(height / 30));
 
   // Find max total value to normalize heights
   const maxLayerTotalValue = Math.max(
@@ -266,8 +256,8 @@ export function computeLayout(
       0
     );
 
-    // Use more of the available height - scale up node heights
-    const heightScalingFactor = Math.min(1.5, 3 / Math.sqrt(nodes.length));
+    // Use more of the available height - scale nodes appropriately
+    const heightScalingFactor = 1.0; // Use available height without excessive scaling
     const totalAvailableHeight =
       usableHeight - (nodes.length - 1) * nodePadding;
 
@@ -282,7 +272,7 @@ export function computeLayout(
       const calculatedHeight = Math.max(
         minNodeHeight,
         Math.min(
-          100,
+          160,
           Math.floor(proportion * totalAvailableHeight * heightScalingFactor)
         )
       );
@@ -311,9 +301,11 @@ export function computeLayout(
       );
     }
 
-    // Center nodes vertically in the available space
-    // This ensures equal space above and below the diagram
-    let y = margins.top + (usableHeight - totalHeight) / 2;
+    // Calculate vertical centering offset
+    const verticalOffset = Math.max(0, (usableHeight - totalHeight) / 2);
+
+    // Place nodes with vertical centering
+    let y = margins.top + verticalOffset;
 
     // Assign y positions
     nodes.forEach((node) => {
@@ -328,7 +320,11 @@ export function computeLayout(
   // Calculate x positions for each layer
   const xPositions = new Map<number, number>();
   const layerCount = Math.max(...Array.from(nodesByLayer.keys())) + 1;
-  const usableWidth = width - margins.left - margins.right - nodeWidth;
+
+  // Calculate horizontal space between layers
+  const xSpacing =
+    (width - margins.left - margins.right - nodeWidth) /
+    Math.max(1, layerCount - 1);
 
   // Distribute layers evenly across the width
   for (let layer = 0; layer < layerCount; layer++) {
@@ -337,7 +333,7 @@ export function computeLayout(
       xPositions.set(layer, margins.left);
     } else {
       // Multiple layers - distribute evenly
-      const x = margins.left + (layer * usableWidth) / (layerCount - 1);
+      const x = margins.left + layer * xSpacing;
       xPositions.set(layer, x);
     }
   }

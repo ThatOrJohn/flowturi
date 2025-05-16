@@ -181,7 +181,7 @@ const RecordButton: React.FC<RecordButtonProps> = ({
         try {
           // Capture current frame
           const canvas = await html2canvas(targetRef.current as HTMLElement, {
-            backgroundColor: null,
+            backgroundColor: theme === "dark" ? "#181a20" : "#f7f7f7", // Set background based on theme
             scale: 1,
             logging: false,
             useCORS: true,

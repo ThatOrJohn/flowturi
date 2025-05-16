@@ -186,8 +186,8 @@ const RealtimeSankey: React.FC<RealtimeSankeyProps> = ({
       // Create layered groups for proper z-index ordering
       const baseGroup = svg.append("g");
 
-      // Use a moderate transform value to position in the middle of the container
-      baseGroup.attr("transform", `translate(0, ${-dimensions.height * 0.15})`);
+      // Position correctly without negative transform
+      baseGroup.attr("transform", `translate(0, 0)`);
 
       const linksGroup = baseGroup.append("g").attr("class", "links-layer");
       const nodesGroup = baseGroup.append("g").attr("class", "nodes-layer");
@@ -496,11 +496,17 @@ const RealtimeSankey: React.FC<RealtimeSankeyProps> = ({
     >
       <svg
         ref={svgRef}
-        width={dimensions.width}
-        height={dimensions.height}
-        style={{ overflow: "visible" }}
+        width="100%"
+        height="100%"
+        style={{
+          display: "block",
+          overflow: "hidden",
+          margin: "0 auto",
+          maxHeight: "100%",
+        }}
         viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
         preserveAspectRatio="xMidYMid meet"
+        className="sankey-diagram"
       ></svg>
     </div>
   );

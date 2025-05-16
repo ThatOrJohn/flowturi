@@ -3,12 +3,20 @@
 .sankey-container {
   display: flex;
   justify-content: center;
+  align-items: center;
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 500px;
-  margin: 0;
-  overflow: hidden; /* Ensure content stays within bounds */
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.sankey-diagram {
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+  overflow: hidden;
+  pointer-events: all;
 }
 
 /* Layer structure for proper stacking */
@@ -33,7 +41,7 @@
   transition: all 0.2s;
   shape-rendering: crispEdges;
   stroke: rgba(0, 0, 0, 0.3);
-  stroke-width: 0.5;
+  stroke-width: 1px;
 }
 
 /* Source and sink node label emphasis */
@@ -55,7 +63,7 @@
 .node-label {
   pointer-events: none;
   font-family: Arial, sans-serif;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   text-shadow: 0 2px 3px rgba(0, 0, 0, 0.9);
   fill: #ffffff;
@@ -68,12 +76,12 @@
 .node-label-background {
   pointer-events: none;
   opacity: 0.98;
-  rx: 3px;
-  ry: 3px;
+  rx: 4px;
+  ry: 4px;
   fill: rgba(15, 15, 20, 0.97);
   stroke: rgba(255, 255, 255, 0.5);
-  stroke-width: 0.8;
-  filter: drop-shadow(0px 1px 4px rgba(0, 0, 0, 0.8));
+  stroke-width: 1px;
+  filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.8));
 }
 
 /* Make node label group draggable */
@@ -190,10 +198,11 @@ body.dark .link:hover .link-label-background {
 /* Connector line styling */
 .label-connector {
   pointer-events: none;
-  stroke: rgba(255, 255, 255, 0.4);
-  stroke-width: 0.8px;
+  stroke: rgba(255, 255, 255, 0.6);
+  stroke-width: 1px;
   stroke-dasharray: 3, 3;
-  filter: none; /* Remove shadow for a cleaner look */
+  filter: none;
+  z-index: 1;
 }
 
 body.dark .label-connector {
@@ -272,23 +281,24 @@ body.light .label-connector {
   cursor: pointer;
   transition: stroke-opacity 0.3s;
   fill: none;
+  stroke-opacity: 0.6 !important;
 }
 
 /* Link label styling */
 .link-label {
   pointer-events: none;
-  font-weight: 700; /* Make text bolder */
+  font-weight: 700;
   user-select: none;
-  font-size: 10px; /* Slightly smaller than node labels */
-  fill: #ffffff; /* White text for dark mode compatibility */
+  font-size: 12px;
+  fill: #ffffff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 
 .link-label-background {
-  opacity: 0.98; /* Higher opacity */
+  opacity: 0.98;
   rx: 3px;
   ry: 3px;
-  fill: rgba(30, 30, 35, 0.95) !important; /* Darker background */
+  fill: rgba(30, 30, 35, 0.95) !important;
   stroke: rgba(255, 255, 255, 0.35);
   stroke-width: 0.8px;
   filter: drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.5));
@@ -308,7 +318,7 @@ body.light .label-connector {
 /* Most specific light mode label styles to ensure they override any inline styles */
 body.light .node-label-group .node-label,
 body.light .link-label-group .link-label {
-  fill: #ffffff !important; /* Use !important to override any inline styles */
+  fill: #ffffff !important;
   color: #ffffff !important;
   text-shadow: none;
   font-weight: 800;
@@ -327,7 +337,7 @@ body.light .link-label-group .link-label-background {
   cursor: pointer;
   transition: all 0.3s ease;
   opacity: 1;
-  z-index: 100; /* Ensure it's on top of other elements */
+  z-index: 100;
 }
 
 .reset-button rect {
@@ -346,13 +356,21 @@ body.light .link-label-group .link-label-background {
 }
 
 .link-label-connector {
-  stroke: rgba(180, 180, 180, 0.6);
-  stroke-width: 0.8px;
-  stroke-dasharray: 2px, 2px;
+  stroke: rgba(200, 200, 200, 0.7);
+  stroke-width: 1px;
+  stroke-dasharray: 3px, 2px;
   pointer-events: none;
 }
 
 /* In dark theme, make connector more visible */
 :global(.dark) .link-label-connector {
   stroke: rgba(220, 220, 220, 0.6);
+}
+
+/* Ensure nodes and links don't extend too far */
+.nodes-layer,
+.links-layer,
+.node-labels-layer,
+.link-labels-layer {
+  overflow: visible;
 }

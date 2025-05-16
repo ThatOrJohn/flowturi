@@ -647,52 +647,6 @@ const App = () => {
 
   // Render different content based on mode
   const renderContent = () => {
-    if (error) {
-      return (
-        <>
-          <div className="file-control-row">
-            {mode === "historical" ? (
-              <>
-                {fileUploadInput}
-                {fileInfoPanel}
-                {DEMO_MODE && (
-                  <div className="demo-mode-container">{demoModeSection}</div>
-                )}
-              </>
-            ) : (
-              <WebSocketStream onStreamData={handleStreamData} theme={theme} />
-            )}
-          </div>
-          <p className="error-message">{error}</p>
-        </>
-      );
-    }
-
-    if (snapshots.length === 0) {
-      return (
-        <>
-          <div className="file-control-row">
-            {mode === "historical" ? (
-              <>
-                {fileUploadInput}
-                {fileInfoPanel}
-                {DEMO_MODE && (
-                  <div className="demo-mode-container">{demoModeSection}</div>
-                )}
-              </>
-            ) : (
-              <WebSocketStream onStreamData={handleStreamData} theme={theme} />
-            )}
-          </div>
-          <p className="no-data-message">
-            {mode === "historical"
-              ? "Please upload a JSON or CSV file to visualize."
-              : "Connect to a WebSocket stream to begin receiving data."}
-          </p>
-        </>
-      );
-    }
-
     // Common playback controls for both modes
     const playbackControls = (
       <div className="playback-controls">
@@ -717,7 +671,7 @@ const App = () => {
             <input
               type="range"
               min="0"
-              max={snapshots.length - 1}
+              max={Math.max(0, snapshots.length - 1)}
               value={currentIndex}
               onChange={handleSliderChange}
               disabled={snapshots.length <= 1 || mode === "realtime"}
@@ -829,102 +783,95 @@ const App = () => {
 
     // Sankey visualization (common to both modes)
     const sankeyVisualization = (
-      <div
-        className="sankey-view-container"
-        style={{
-          flex: 1,
-          minHeight: 0,
-          display: "flex",
-          flexDirection: "column",
-          paddingTop: 0,
-          marginTop: 0,
-          overflow: "hidden",
-        }}
-      >
-        <div
-          ref={sankeyContainerRef}
-          className={`sankey-container ${theme}`}
-          style={{ flex: 1 }}
-        >
+      <div className="sankey-view-container">
+        <div ref={sankeyContainerRef} className={`sankey-container ${theme}`}>
           <ErrorBoundary>
-            {mode === "historical" ? (
+            {mode === "historical" && snapshots.length > 0 ? (
               <SankeyDiagram
                 snapshots={snapshots}
                 currentIndex={currentIndex}
                 resetLabelsRef={resetLabelsRef}
               />
-            ) : (
+            ) : mode === "realtime" && latestFrame ? (
               <RealtimeSankey latestFrame={latestFrame} theme={theme} />
+            ) : (
+              <div className="empty-sankey-placeholder"></div>
             )}
           </ErrorBoundary>
         </div>
       </div>
     );
 
-    // Mode-specific bottom row
-    const bottomRow = (
-      <div className="file-control-row" style={{ marginTop: "5px" }}>
-        {mode === "historical" ? (
-          (() => {
-            console.log("Rendering historical mode, DEMO_MODE =", DEMO_MODE);
-            return (
+    // Determine the content to display in the main area
+    let mainContent;
+
+    if (error) {
+      mainContent = <p className="error-message">{error}</p>;
+    } else if (snapshots.length === 0) {
+      mainContent = (
+        <p className="no-data-message">
+          {mode === "historical"
+            ? "Please upload a JSON or CSV file to visualize."
+            : "Connect to a WebSocket stream to begin receiving data."}
+        </p>
+      );
+    }
+
+    // Always use consistent layout, just vary the bottom controls by mode
+    return (
+      <div className={`App ${theme}`}>
+        <div className="app-header">
+          <h1>Flowturi Studio</h1>
+          <div className="app-header-controls">
+            <ModeToggle currentMode={mode} onModeChange={handleModeChange} />
+            {themeToggleSwitch}
+          </div>
+        </div>
+        <div className="main-content">
+          {playbackControls}
+          {sankeyVisualization}
+          {mainContent}
+          <div className="file-controls-stack">
+            {mode === "historical" ? (
+              // Historical mode controls
               <>
-                {fileUploadInput}
-                {fileInfoPanel}
+                <div className="file-control-row">
+                  {fileUploadInput}
+                  {fileInfoPanel}
+                </div>
                 {DEMO_MODE && (
                   <div className="demo-mode-container">{demoModeSection}</div>
                 )}
               </>
-            );
-          })()
-        ) : (
-          <div className="realtime-controls-row">
-            <WebSocketStream
-              onStreamData={handleStreamData}
-              onConnectionStatusChange={handleConnectionStatusChange}
-              theme={theme}
-              latestFrame={latestFrame}
-            />
+            ) : (
+              // Real-time mode controls
+              <div className="realtime-controls-row">
+                <WebSocketStream
+                  onStreamData={handleStreamData}
+                  theme={theme}
+                  onConnectionStatusChange={handleConnectionStatusChange}
+                  latestFrame={latestFrame}
+                />
+              </div>
+            )}
           </div>
+        </div>
+        {/* Fixed position reset button */}
+        {mode === "historical" && snapshots.length > 0 && (
+          <button
+            className={`fixed-reset-button ${theme}`}
+            onClick={handleResetLabels}
+            title="Reset all node and link label positions to default"
+          >
+            <span className="reset-icon">↺</span> Reset Labels
+          </button>
         )}
+        <Footer theme={theme} />
       </div>
-    );
-
-    return (
-      <>
-        {playbackControls}
-        {sankeyVisualization}
-        {bottomRow}
-      </>
     );
   };
 
-  return (
-    <div className={`App ${theme}`}>
-      <div className="app-header">
-        <h1>Flowturi Studio</h1>
-        <div className="app-header-controls">
-          <ModeToggle currentMode={mode} onModeChange={handleModeChange} />
-          {themeToggleSwitch}
-          {DEMO_MODE && <div className="demo-mode-indicator">DEMO MODE</div>}
-        </div>
-      </div>
-      {renderContent()}
-
-      {/* Fixed position reset button */}
-      {mode === "historical" && snapshots.length > 0 && (
-        <button
-          className={`fixed-reset-button ${theme}`}
-          onClick={handleResetLabels}
-          title="Reset all node and link label positions to default"
-        >
-          <span className="reset-icon">↺</span> Reset Labels
-        </button>
-      )}
-
-      <Footer theme={theme} />
-    </div>
-  );
+  return renderContent();
 };
 
 export default App;

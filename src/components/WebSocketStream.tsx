@@ -70,6 +70,25 @@ const WebSocketStream: React.FC<WebSocketStreamProps> = ({
     }));
   }, [connectionStatus, onConnectionStatusChange, wsError]);
 
+  // Add effect to monitor and handle latestFrame updates
+  useEffect(() => {
+    if (latestFrame) {
+      console.log("[WebSocketStream] Received new frame data:", {
+        timestamp: latestFrame.timestamp,
+        tick: latestFrame.tick,
+        nodes: latestFrame.nodes?.length,
+        links: latestFrame.links?.length,
+      });
+
+      // Update streamInfo with frame stats whenever we get new data
+      setStreamInfo((prev) => ({
+        ...prev,
+        lastMessage: new Date(),
+        messagesReceived: prev.messagesReceived + 1,
+      }));
+    }
+  }, [latestFrame]);
+
   // Format bytes to human-readable format
   const formatBytes = (bytes: number): string => {
     if (bytes < 1024) return bytes + " B";
@@ -126,10 +145,14 @@ const WebSocketStream: React.FC<WebSocketStreamProps> = ({
     };
   };
 
-  // Calculate total flow volume
+  // Calculate and format total flow volume with appropriate units if needed
   const getTotalFlow = () => {
     if (!latestFrame || !latestFrame.links) return 0;
-    return latestFrame.links.reduce((sum, link) => sum + link.value, 0);
+    const totalValue = latestFrame.links.reduce(
+      (sum, link) => sum + link.value,
+      0
+    );
+    return Math.round(totalValue);
   };
 
   const nodeCounts = getNodeCounts();
@@ -154,6 +177,11 @@ const WebSocketStream: React.FC<WebSocketStreamProps> = ({
             placeholder="ws://your-data-source:port"
             disabled={isConnected}
             className={theme}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !isConnected) {
+                connect(wsUrl);
+              }
+            }}
           />
         </div>
 
@@ -186,49 +214,6 @@ const WebSocketStream: React.FC<WebSocketStreamProps> = ({
     </div>
   );
 
-  // Frame Information Section
-  const frameInfoPanel = latestFrame && (
-    <div className="frame-info-container">
-      <h4>Latest Frame</h4>
-      <div className="frame-info">
-        <div className="stream-stat-item">
-          <span className="stat-label">Timestamp:</span>
-          <span className="stat-value">
-            {getFormattedTimestamp(latestFrame.timestamp)}
-          </span>
-        </div>
-
-        {latestFrame.tick !== undefined && (
-          <div className="stream-stat-item">
-            <span className="stat-label">Tick:</span>
-            <span className="stat-value">{latestFrame.tick}</span>
-          </div>
-        )}
-
-        <div className="stream-stat-item">
-          <span className="stat-label">Nodes:</span>
-          <span className="stat-value">
-            {nodeCounts.total}
-            <span className="node-type-counts">
-              ({nodeCounts.sources} src, {nodeCounts.intermediates} int,{" "}
-              {nodeCounts.sinks} sink)
-            </span>
-          </span>
-        </div>
-
-        <div className="stream-stat-item">
-          <span className="stat-label">Links:</span>
-          <span className="stat-value">{latestFrame.links?.length || 0}</span>
-        </div>
-
-        <div className="stream-stat-item">
-          <span className="stat-label">Total Flow:</span>
-          <span className="stat-value">{totalFlow.toFixed(1)}</span>
-        </div>
-      </div>
-    </div>
-  );
-
   // Stream Information Panel
   const streamInfoPanel = (
     <div className={`stream-info-panel ${theme}`}>
@@ -249,16 +234,49 @@ const WebSocketStream: React.FC<WebSocketStreamProps> = ({
         </div>
       </div>
 
-      <div className="stream-stats">
-        <div className="stream-stat-item">
-          <span className="stat-label">Connection:</span>
-          <span className="stat-value">
-            {isConnected ? "Active" : "Inactive"}
-          </span>
+      <div className="frame-info-container">
+        <h4>Stream Statistics</h4>
+        <div className="frame-info">
+          <div className="stream-stat-item">
+            <span className="stat-label">Messages Received:</span>
+            <span className="stat-value">{streamInfo.messagesReceived}</span>
+          </div>
+
+          {streamInfo.lastMessage && (
+            <div className="stream-stat-item">
+              <span className="stat-label">Last Update:</span>
+              <span className="stat-value">
+                {streamInfo.lastMessage.toLocaleTimeString()}
+              </span>
+            </div>
+          )}
+
+          <div className="stream-stat-item">
+            <span className="stat-label">Tick:</span>
+            <span className="stat-value">{latestFrame?.tick ?? "--"}</span>
+          </div>
+
+          <div className="stream-stat-item">
+            <span className="stat-label">Nodes:</span>
+            <span className="stat-value">
+              {latestFrame?.nodes?.length || 0}
+              {nodeCounts.total > 0 && (
+                <span className="node-type-counts">
+                  ({nodeCounts.sources} src, {nodeCounts.intermediates} int,{" "}
+                  {nodeCounts.sinks} sink)
+                </span>
+              )}
+            </span>
+          </div>
+
+          <div className="stream-stat-item">
+            <span className="stat-label">Links:</span>
+            <span className="stat-value">
+              {latestFrame?.links?.length || 0}
+            </span>
+          </div>
         </div>
       </div>
-
-      {frameInfoPanel}
     </div>
   );
 
