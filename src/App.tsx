@@ -12,6 +12,7 @@ import { Snapshot, FileInfo } from "./types";
 import { FrameData } from "./layout/computeLayout";
 import Footer from "./components/Footer";
 import "./App.css";
+import { resetNodePositions } from "./components/NodeDragHandler";
 
 // Environment variables
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === "true" || false;
@@ -641,8 +642,22 @@ const App = () => {
   // Function to handle reset labels button click
   const handleResetLabels = () => {
     if (resetLabelsRef.current) {
+      // Reset labels using the existing ref function
       resetLabelsRef.current();
     }
+
+    // Also reset node positions
+    if (snapshots.length > 0) {
+      const resetFrames = resetNodePositions(snapshots);
+      setSnapshots(resetFrames);
+    }
+  };
+
+  // Add function to handle node position updates from SankeyDiagram
+  const handleFramesUpdated = (updatedFrames: FrameData[]) => {
+    console.log("Frames updated with new node positions");
+    // Update snapshots with the new frame data containing custom node positions
+    setSnapshots(updatedFrames);
   };
 
   // Render different content based on mode
@@ -791,6 +806,7 @@ const App = () => {
                 snapshots={snapshots}
                 currentIndex={currentIndex}
                 resetLabelsRef={resetLabelsRef}
+                onFramesUpdated={handleFramesUpdated}
               />
             ) : mode === "realtime" && latestFrame ? (
               <RealtimeSankey latestFrame={latestFrame} theme={theme} />
@@ -867,9 +883,9 @@ const App = () => {
           <button
             className={`fixed-reset-button ${theme}`}
             onClick={handleResetLabels}
-            title="Reset all node and link label positions to default"
+            title="Reset all node and link positions to default"
           >
-            <span className="reset-icon">↺</span> Reset Labels
+            <span className="reset-icon">↺</span> Reset Positions
           </button>
         )}
         <Footer theme={theme} />

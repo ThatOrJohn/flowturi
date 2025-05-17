@@ -9,7 +9,7 @@ import {
 export interface FrameData {
   timestamp: string;
   tick?: number; // Optional tick number for real-time data
-  nodes: { name: string }[];
+  nodes: { name: string; customX?: number; customY?: number }[];
   links: { source: string; target: string; value: number }[];
 }
 
@@ -22,6 +22,7 @@ export interface LayoutState {
       height: number;
       width?: number;
       layer: number;
+      isDragged?: boolean;
     };
   };
   linkPaths: {
@@ -44,6 +45,8 @@ interface Node {
   depth?: number;
   value?: number;
   index?: number;
+  customX?: number;
+  customY?: number;
 }
 
 interface Link {
@@ -59,7 +62,8 @@ interface Link {
 export function computeLayout(
   frames: FrameData[],
   width = 800,
-  height = 600
+  height = 600,
+  customPositions?: { [nodeName: string]: { x: number; y: number } }
 ): LayoutState[] {
   if (!frames.length) return [];
 
@@ -72,10 +76,32 @@ export function computeLayout(
   frames.forEach((frame) => {
     frame.nodes.forEach((node) => {
       if (!allNodes.has(node.name)) {
-        allNodes.set(node.name, { name: node.name });
+        allNodes.set(node.name, {
+          name: node.name,
+          customX: node.customX,
+          customY: node.customY,
+        });
+      } else if (node.customX !== undefined && node.customY !== undefined) {
+        // Update custom position if provided
+        const existingNode = allNodes.get(node.name);
+        if (existingNode) {
+          existingNode.customX = node.customX;
+          existingNode.customY = node.customY;
+        }
       }
     });
   });
+
+  // Also apply any custom positions passed directly to the function
+  if (customPositions) {
+    Object.entries(customPositions).forEach(([nodeName, position]) => {
+      const node = allNodes.get(nodeName);
+      if (node) {
+        node.customX = position.x;
+        node.customY = position.y;
+      }
+    });
+  }
 
   // Calculate total flow value for each node across all frames
   const nodeValues = new Map<string, number>();
@@ -355,9 +381,20 @@ export function computeLayout(
 
       frame.nodes.forEach((frameNode) => {
         const nodeName = frameNode.name;
-        const layer = allNodes.get(nodeName)?.layer || 0;
-        const x = xPositions.get(layer) || margins.left;
-        const y = yPositions.get(nodeName) || margins.top;
+        const node = allNodes.get(nodeName);
+        const layer = node?.layer || 0;
+
+        // Check if node has custom position
+        const hasCustomPosition =
+          node?.customX !== undefined && node?.customY !== undefined;
+
+        // Use custom position if available, otherwise use calculated position
+        const x = hasCustomPosition
+          ? node!.customX!
+          : xPositions.get(layer) || margins.left;
+        const y = hasCustomPosition
+          ? node!.customY!
+          : yPositions.get(nodeName) || margins.top;
         const height = nodeHeights.get(nodeName) || minNodeHeight;
 
         nodePositions[nodeName] = {
@@ -366,6 +403,7 @@ export function computeLayout(
           height,
           width: nodeWidth,
           layer,
+          isDragged: hasCustomPosition,
         };
       });
 
@@ -483,4 +521,66 @@ export function computeLayout(
 
   console.log(`Generated ${layoutStates.length} layout states`);
   return layoutStates;
+}
+
+/**
+ * Update node position after it has been dragged
+ * @param frames The original frame data
+ * @param nodeName The name of the node that was dragged
+ * @param newX New X coordinate
+ * @param newY New Y coordinate
+ * @returns Updated frames with the new node position
+ */
+export function updateNodePosition(
+  frames: FrameData[],
+  nodeName: string,
+  newX: number,
+  newY: number
+): FrameData[] {
+  return frames.map((frame) => {
+    // Find if the node exists in this frame
+    const nodeIndex = frame.nodes.findIndex((node) => node.name === nodeName);
+
+    if (nodeIndex >= 0) {
+      // Create a new frame with the updated node position
+      const updatedFrame = {
+        ...frame,
+        nodes: [...frame.nodes],
+      };
+
+      // Update the node with custom position
+      updatedFrame.nodes[nodeIndex] = {
+        ...updatedFrame.nodes[nodeIndex],
+        customX: newX,
+        customY: newY,
+      };
+
+      return updatedFrame;
+    }
+
+    // Node not found in this frame, return unchanged
+    return frame;
+  });
+}
+
+/**
+ * Gets the current custom positions for all dragged nodes
+ * @param layoutStates The current layout states
+ * @returns Object mapping node names to their custom positions
+ */
+export function getCustomNodePositions(layoutStates: LayoutState[]): {
+  [nodeName: string]: { x: number; y: number };
+} {
+  const customPositions: { [nodeName: string]: { x: number; y: number } } = {};
+
+  // Check all layout states for dragged nodes
+  layoutStates.forEach((state) => {
+    Object.entries(state.nodePositions).forEach(([nodeName, position]) => {
+      if (position.isDragged) {
+        customPositions[nodeName] = { x: position.x, y: position.y };
+      }
+    });
+  });
+
+  return customPositions;
 }
