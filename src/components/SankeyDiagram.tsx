@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { computeLayout, LayoutState, FrameData } from "../layout/computeLayout";
 import "./SankeyDiagram.css";
+import { addNodeDragBehavior } from "./NodeDragHandler";
 
 // Define the type for label position overrides
 type LabelOverride = {
@@ -69,6 +70,7 @@ interface SankeyDiagramProps {
   snapshots?: FrameData[]; // Added for multiple frames
   currentIndex?: number; // Current frame index
   resetLabelsRef?: React.MutableRefObject<(() => void) | null>; // Add ref for reset function
+  onFramesUpdated?: (frames: FrameData[]) => void; // Add callback for frame updates
 }
 
 // Extend the Window interface to include our debug functions
@@ -84,6 +86,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
   snapshots = [],
   currentIndex = 0,
   resetLabelsRef,
+  onFramesUpdated,
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -468,10 +471,22 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
         .append("g")
         .attr("class", "link");
 
-      // Add link paths
+      // Add link paths with data attributes for source and target
       link
         .append("path")
         .attr("d", (d) => d.path || "")
+        .attr("data-source", (d) => {
+          if (typeof d.source === "string") return d.source;
+          if (typeof d.source === "object" && d.source !== null)
+            return d.source.name;
+          return "";
+        })
+        .attr("data-target", (d) => {
+          if (typeof d.target === "string") return d.target;
+          if (typeof d.target === "object" && d.target !== null)
+            return d.target.name;
+          return "";
+        })
         .attr("fill", "none")
         .attr("stroke", (d) => {
           if (d.value > colorConfig.thresholds.critical)
@@ -767,6 +782,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
         .enter()
         .append("g")
         .attr("class", "node")
+        .attr("data-node-name", (d) => d.name)
         .attr("transform", (d) => `translate(${d.x0}, ${d.y0})`);
 
       node
@@ -786,6 +802,18 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
             colorConfig.nodes[d.depthCategory || "intermediate"]
           );
         });
+
+      // Add node drag behavior
+      addNodeDragBehavior(node as any, snapshots, (updatedFrames) => {
+        // When nodes are dragged, we need to update our snapshots and recompute layout
+        // This call will cause a re-render with the new positions
+        console.log("Node positions updated, recomputing layout...");
+
+        // Pass the updated frames back to the parent component
+        if (onFramesUpdated) {
+          onFramesUpdated(updatedFrames);
+        }
+      });
 
       // Add node labels with drag behavior
       const nodeLabelGroups = nodeLabelsGroup
