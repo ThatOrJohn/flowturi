@@ -834,7 +834,7 @@ const App = () => {
         <p className="no-data-message">
           {mode === "historical" ? (
             <>
-              "Please upload a{" "}
+              Please upload a{" "}
               <a
                 href="https://github.com/ThatOrJohn/flowturi#historical-mode-expects-data-in-the-following-format"
                 target="_blank"
@@ -842,7 +842,7 @@ const App = () => {
               >
                 JSON or CSV
               </a>{" "}
-              file to visualize."
+              file to visualize.
             </>
           ) : (
             <>
