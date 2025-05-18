@@ -832,9 +832,31 @@ const App = () => {
     } else if (snapshots.length === 0) {
       mainContent = (
         <p className="no-data-message">
-          {mode === "historical"
-            ? "Please upload a JSON or CSV file to visualize."
-            : "Connect to a WebSocket stream to begin receiving data."}
+          {mode === "historical" ? (
+            <>
+              "Please upload a{" "}
+              <a
+                href="https://github.com/ThatOrJohn/flowturi#historical-mode-expects-data-in-the-following-format"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                JSON or CSV
+              </a>{" "}
+              file to visualize."
+            </>
+          ) : (
+            <>
+              Connect to a{" "}
+              <a
+                href="https://github.com/ThatOrJohn/flowturi#expected-real-time-websocket-data-format"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                WebSocket stream
+              </a>{" "}
+              to begin receiving data.
+            </>
+          )}
         </p>
       );
     }
