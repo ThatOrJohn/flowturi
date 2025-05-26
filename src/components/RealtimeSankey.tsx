@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { LayoutState, FrameData } from "../layout/computeLayout";
 import { computeRealtimeLayout } from "../layout/computeRealtimeLayout";
+import { addNodeDragBehavior } from "./NodeDragHandler";
 import "./SankeyDiagram.css";
 
 interface RealtimeSankeyProps {
@@ -11,6 +12,7 @@ interface RealtimeSankeyProps {
   latestFrame?: FrameData | null;
 }
 
+// Add type for node depth category
 type NodeDepthCategory = "source" | "intermediate" | "sink";
 
 interface ColorConfig {
@@ -55,6 +57,9 @@ const RealtimeSankey: React.FC<RealtimeSankeyProps> = ({
     height: propHeight,
   });
   const [error, setError] = useState<string | null>(null);
+  const [customPositions, setCustomPositions] = useState<{
+    [nodeName: string]: { x: number; y: number };
+  }>({});
 
   // Create cache for smoothing between frames
   const smoothingCacheRef = useRef<any>(null);
@@ -135,13 +140,14 @@ const RealtimeSankey: React.FC<RealtimeSankeyProps> = ({
     });
 
     try {
-      // Compute real-time layout
+      // Compute real-time layout with custom positions
       const { layoutState, smoothingCache } = computeRealtimeLayout(
         latestFrame,
         currentLayoutState,
         smoothingCacheRef.current,
         dimensions.width,
-        dimensions.height
+        dimensions.height,
+        customPositions
       );
 
       // Update cache for next frame
@@ -173,7 +179,7 @@ const RealtimeSankey: React.FC<RealtimeSankeyProps> = ({
       console.error("Error computing real-time layout:", err);
       setError("Error in layout computation");
     }
-  }, [latestFrame, dimensions.width, dimensions.height]);
+  }, [latestFrame, dimensions.width, dimensions.height, customPositions]);
 
   // Render the chart using the current layout state
   useEffect(() => {
@@ -333,6 +339,27 @@ const RealtimeSankey: React.FC<RealtimeSankeyProps> = ({
           );
         });
 
+      // Add node drag behavior
+      if (latestFrame) {
+        addNodeDragBehavior(node as any, [latestFrame], (updatedFrames) => {
+          if (updatedFrames.length > 0) {
+            const frame = updatedFrames[0];
+            const newCustomPositions = { ...customPositions };
+
+            frame.nodes.forEach((node) => {
+              if (node.customX !== undefined && node.customY !== undefined) {
+                newCustomPositions[node.name] = {
+                  x: node.customX,
+                  y: node.customY,
+                };
+              }
+            });
+
+            setCustomPositions(newCustomPositions);
+          }
+        });
+      }
+
       // Add node labels with styled backgrounds
       const nodeLabelGroups = nodeLabelsGroup
         .selectAll(".node-label-group")
@@ -478,7 +505,7 @@ const RealtimeSankey: React.FC<RealtimeSankeyProps> = ({
       console.error("Error rendering Sankey diagram:", err);
       setError("Error rendering diagram");
     }
-  }, [currentLayoutState, theme]);
+  }, [currentLayoutState, theme, customPositions]);
 
   if (error) {
     return <p className="sankey-error">Error: {error}</p>;
