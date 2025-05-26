@@ -62,7 +62,9 @@ Want to test Flowturi's Real-Time mode with some synthetic data? Check out the [
 
 ## Data Format
 
-### Historical mode accepts data in the following format:
+### Historical mode accepts data in the following formats:
+
+#### JSON
 
 ```json
 {
@@ -75,6 +77,8 @@ Want to test Flowturi's Real-Time mode with some synthetic data? Check out the [
   "links": [{ "source": "Source1", "target": "Target1", "value": 10 }]
 }
 ```
+
+#### CSV
 
 ```csv
 timestamp,source,target,value
