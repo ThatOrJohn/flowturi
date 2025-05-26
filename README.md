@@ -87,15 +87,14 @@ timestamp,source,target,value
 The WebSocket stream should send data in the following format:
 
 ```json
-{
-  "timestamp": "2023-05-10T15:30:00Z",
-  "tick": 1,
-  "nodes": [
-    { "id": "Source1", "label": "Source 1" },
-    { "id": "Target1", "label": "Target 1" }
-  ],
-  "links": [{ "source": "Source1", "target": "Target1", "value": 10 }]
-}
+[
+  {
+    "timestamp": "2023-05-10T15:30:00Z",
+    "tick": 1,
+    "nodes": [{ "name": "Source 1" }, { "name": "Target 1" }],
+    "links": [{ "source": "Source1", "target": "Target1", "value": 10 }]
+  }
+]
 ```
 
 Note, the timestamp should be fairly flexible. Basically, whatever works with [Javascript's](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse) `new Date(timestamp)`. To be safe you could stick with ISO 8601 or millisecond timestamps.
