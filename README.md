@@ -62,7 +62,7 @@ Want to test Flowturi's Real-Time mode with some synthetic data? Check out the [
 
 ## Data Format
 
-### Historical mode expects data in the following format:
+### Historical mode accepts data in the following format:
 
 ```json
 {
@@ -91,7 +91,10 @@ The WebSocket stream should send data in the following format:
   {
     "timestamp": "2023-05-10T15:30:00Z",
     "tick": 1,
-    "nodes": [{ "name": "Source 1" }, { "name": "Target 1" }],
+    "nodes": [
+      { "id": "Source1", "label": "Source 1" },
+      { "id": "Target1", "label": "Target 1" }
+    ],
     "links": [{ "source": "Source1", "target": "Target1", "value": 10 }]
   }
 ]
