@@ -28,7 +28,8 @@ export function computeRealtimeLayout(
   previousState: LayoutState | null,
   smoothingCache: SmoothingCache | null = null,
   width = 800,
-  height = 600
+  height = 600,
+  customPositions?: { [nodeName: string]: { x: number; y: number } }
 ): { layoutState: LayoutState; smoothingCache: SmoothingCache } {
   console.log("Computing Sankey layout for real-time data...");
   console.log("Frame data:", {
@@ -297,14 +298,22 @@ export function computeRealtimeLayout(
     if (!nodeInfo) return;
 
     const layer = nodeInfo.yIndex;
-    const x = xPositions.get(layer) || margins.left;
+    let x = xPositions.get(layer) || margins.left;
+    let y = nodeInfo.y;
+
+    // Apply custom position if available
+    if (customPositions && customPositions[node.name]) {
+      x = customPositions[node.name].x;
+      y = customPositions[node.name].y;
+    }
 
     nodePositions[node.name] = {
       x,
-      y: nodeInfo.y,
+      y,
       height: nodeInfo.height,
       width: nodeWidth,
       layer,
+      isDragged: customPositions && customPositions[node.name] ? true : false,
     };
   });
 
