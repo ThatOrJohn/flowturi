@@ -67,7 +67,7 @@ Want to test Flowturi's Real-Time mode with some synthetic data? Check out the [
 #### JSON
 
 ```json
-{
+[{
   "timestamp": "2023-05-10 15:30:00",
   "tick": 1,
   "nodes": [
@@ -75,7 +75,8 @@ Want to test Flowturi's Real-Time mode with some synthetic data? Check out the [
     { "id": "Target1", "label": "Target 1" }
   ],
   "links": [{ "source": "Source1", "target": "Target1", "value": 10 }]
-}
+}, ...
+]
 ```
 
 #### CSV
