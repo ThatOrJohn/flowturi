@@ -2,7 +2,9 @@
 
 Flowturi Studio is a visualization tool for animated Sankey diagrams with both historical and real-time capabilities.
 
-Check out [Flowturi Designer](https://github.com/ThatOrJohn/flowturi-designer) to create your own Flowturi historical files.
+Also see:
+- [Flowturi Designer](https://github.com/ThatOrJohn/flowturi-designer) to create your own Flowturi historical files
+- [Flowturi Real-Time Sandbox](https://github.com/ThatOrJohn/flowturi-realtime-sandbox) for a Docker Compose way to play with realtime mode
 
 ## Features
 
