@@ -351,110 +351,9 @@ body.light {
 
 .app-header-controls {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 8px;
   margin-left: 20px;
-}
-
-.theme-toggle-bar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 2px;
-}
-
-.theme-label-left,
-.theme-label-right {
-  font-size: 0.8em;
-  font-family: Arial, sans-serif;
-  font-weight: 600;
-  color: #a9afb6;
-  letter-spacing: 0.5px;
-  user-select: none;
-}
-
-.theme-switch {
-  position: relative;
-  width: 40px;
-  height: 22px;
-  display: inline-block;
-}
-
-.theme-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.theme-switch .slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: #e0e0e0;
-  border-radius: 22px;
-  transition: background 0.3s;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-}
-
-body.dark .theme-switch .slider {
-  background: #3d3e42;
-}
-
-.theme-switch .slider:before {
-  content: "";
-  position: absolute;
-  left: 3px;
-  top: 3px;
-  width: 22px;
-  height: 22px;
-  background: #fff;
-  border-radius: 50%;
-  transition: transform 0.3s, background 0.3s;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-body.dark .theme-switch .slider:before {
-  background: #a9afb6;
-}
-
-.theme-switch input:checked + .slider:before {
-  transform: translateX(0);
-}
-
-.theme-switch input:not(:checked) + .slider:before {
-  transform: translateX(20px);
-}
-
-/* Crescent effect for dark mode */
-.theme-switch input:checked + .slider:after {
-  content: "";
-  position: absolute;
-  left: 3px;
-  top: 3px;
-  width: 22px;
-  height: 22px;
-  background: #3d3e42;
-  border-radius: 50%;
-  z-index: 1;
-  transition: opacity 0.3s;
-  opacity: 1;
-}
-
-.theme-switch input:not(:checked) + .slider:after {
-  opacity: 0;
-}
-
-body.light .theme-switch .slider:after {
-  background: #e0e0e0;
-}
-
-/* Remove old .theme-label styles */
-.theme-label {
-  display: none;
 }
 
 /* Dropzone styles */
@@ -711,9 +610,8 @@ body.light .theme-switch .slider:after {
 
   .app-header-controls {
     width: 100%;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
+    justify-content: center;
+    margin-left: 0;
   }
 
   .demo-mode-container {
