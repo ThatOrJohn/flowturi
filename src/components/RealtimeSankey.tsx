@@ -35,13 +35,6 @@ interface ColorConfig {
   };
 }
 
-interface BoundingBox {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-}
-
 const RealtimeSankey: React.FC<RealtimeSankeyProps> = ({
   width: propWidth = 800,
   height: propHeight = 600,
@@ -117,14 +110,6 @@ const RealtimeSankey: React.FC<RealtimeSankeyProps> = ({
       }
     };
   }, []);
-
-  // Layout margins for positioning
-  const margins = {
-    top: 20,
-    right: 20,
-    bottom: 20,
-    left: 20,
-  };
 
   // Process new frame data when it arrives
   useEffect(() => {
@@ -250,27 +235,6 @@ const RealtimeSankey: React.FC<RealtimeSankeyProps> = ({
           path: path.path,
         };
       });
-
-      // Array to track all occupied areas for collision detection
-      const occupiedAreas: BoundingBox[] = [];
-
-      // Function to check if a new label would overlap with existing labels
-      const wouldOverlap = (box: BoundingBox) => {
-        // Check against all existing boxes
-        for (const area of occupiedAreas) {
-          if (
-            !(
-              box.x2 < area.x1 ||
-              box.x1 > area.x2 ||
-              box.y2 < area.y1 ||
-              box.y1 > area.y2
-            )
-          ) {
-            return area; // Return the overlapping area
-          }
-        }
-        return null; // No overlap
-      };
 
       // Draw links first (they should be at the back)
       const link = linksGroup
@@ -400,7 +364,7 @@ const RealtimeSankey: React.FC<RealtimeSankeyProps> = ({
           return `${Math.max(8, fontSize)}px`; // Minimum 8px font size
         })
         .attr("fill", theme === "dark" ? "#fff" : "#000")
-        .each(function (d) {
+        .each(function () {
           // Get the text element's bounding box
           const bbox = (this as SVGTextElement).getBBox();
 
@@ -419,15 +383,6 @@ const RealtimeSankey: React.FC<RealtimeSankeyProps> = ({
               })`
             );
 
-          // Add bounding box for overlap detection
-          const boundingBox: BoundingBox = {
-            x1: bbox.x - padding,
-            y1: bbox.y - padding,
-            x2: bbox.x + bbox.width + padding,
-            y2: bbox.y + bbox.height + padding,
-          };
-
-          occupiedAreas.push(boundingBox);
         });
 
       // Add link labels

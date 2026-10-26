@@ -1,8 +1,6 @@
 // src/layout/computeLayout.ts
-import * as d3 from "d3";
 import {
   sankey as d3Sankey,
-  sankeyLinkHorizontal,
   sankeyJustify,
 } from "d3-sankey";
 
@@ -173,7 +171,6 @@ export function computeLayout(
     right: 20, // Reduced right margin
   };
 
-  const usableWidth = width - margins.left - margins.right;
   const usableHeight = height - margins.top - margins.bottom;
 
   const nodeWidth = 40; // Increased node width (was likely 20-30)
@@ -234,7 +231,7 @@ export function computeLayout(
   });
 
   // Sort nodes by importance (value and connections)
-  nodesByLayer.forEach((nodes, layer) => {
+  nodesByLayer.forEach((nodes) => {
     nodes.sort((a, b) => {
       // Get values
       const valueA = nodeValues.get(a.name) || 0;
@@ -265,15 +262,8 @@ export function computeLayout(
   // Base minimum node height on chart dimensions
   const minNodeHeight = Math.max(18, Math.round(height / 30));
 
-  // Find max total value to normalize heights
-  const maxLayerTotalValue = Math.max(
-    ...Array.from(nodesByLayer.entries()).map(([_, nodes]) =>
-      nodes.reduce((sum, node) => sum + (nodeValues.get(node.name) || 0), 0)
-    )
-  );
-
   // Center the nodes vertically in the available space
-  nodesByLayer.forEach((nodes, layer) => {
+  nodesByLayer.forEach((nodes) => {
     if (!nodes.length) return;
 
     // Calculate total value in this layer
@@ -434,7 +424,7 @@ export function computeLayout(
         const getConnectionPoint = (
           pos: any,
           isSource: boolean,
-          linkValue: number
+          _linkValue: number
         ) => {
           const nodeName = isSource ? link.source : link.target;
           const portsMap = isSource ? sourcePortsUsed : targetPortsUsed;

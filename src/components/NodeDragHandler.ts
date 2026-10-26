@@ -1,7 +1,6 @@
 import * as d3 from "d3";
 import {
   updateNodePosition,
-  getCustomNodePositions,
   FrameData,
 } from "../layout/computeLayout";
 
@@ -29,7 +28,7 @@ export function addNodeDragBehavior(
     .drag<SVGGElement, Node>()
     .on(
       "start",
-      function (event: d3.D3DragEvent<SVGGElement, Node, Node>, d: Node) {
+      function (_event: d3.D3DragEvent<SVGGElement, Node, Node>, d: Node) {
         d3.select(this).classed("dragging", true);
         console.log(`Started dragging node: ${d.name}`);
       }
@@ -58,7 +57,7 @@ export function addNodeDragBehavior(
     )
     .on(
       "end",
-      function (event: d3.D3DragEvent<SVGGElement, Node, Node>, d: Node) {
+      function (_event: d3.D3DragEvent<SVGGElement, Node, Node>, d: Node) {
         d3.select(this).classed("dragging", false);
 
         // Get final position
@@ -189,6 +188,7 @@ export function resetNodePositions(frames: FrameData[]): FrameData[] {
       ...frame,
       nodes: frame.nodes.map((node) => {
         // Create a new node object without customX and customY properties
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { customX, customY, ...rest } = node;
         return rest;
       }),
