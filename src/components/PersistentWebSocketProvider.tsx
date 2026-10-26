@@ -55,6 +55,8 @@ export const PersistentWebSocketProvider: React.FC<
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const connectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const manualDisconnectRef = useRef<boolean>(false);
+  // Latest connect function, so the reconnect timer never calls a stale closure
+  const connectRef = useRef<(url: string) => void>(() => {});
 
   // Clean up all intervals and timeouts
   const cleanupTimers = useCallback(() => {
@@ -232,7 +234,7 @@ export const PersistentWebSocketProvider: React.FC<
             setTimeout(() => {
               if (!manualDisconnectRef.current) {
                 console.log("[PersistentWS] Attempting to reconnect...");
-                connect(url);
+                connectRef.current(url);
               }
             }, 3000);
           } else {
@@ -247,6 +249,10 @@ export const PersistentWebSocketProvider: React.FC<
     },
     [disconnect, startHeartbeat, sendHeartbeat, cleanupTimers, onStreamData]
   );
+
+  useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
 
   // Clean up on unmount
   useEffect(() => {

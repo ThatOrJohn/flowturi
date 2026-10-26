@@ -6,6 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import RecordButton from "./components/RecordButton";
 import ExportFrameButton from "./components/ExportFrameButton";
 import ModeToggle, { Mode } from "./components/ModeToggle";
+import ThemeToggle from "./components/ThemeToggle";
 import WebSocketStream from "./components/WebSocketStream";
 import Papa from "papaparse";
 import { Snapshot, FileInfo } from "./types";
@@ -177,13 +178,6 @@ const App = () => {
     []
   );
 
-  // In real-time mode, keep the current index on the newest snapshot
-  useEffect(() => {
-    if (mode === "realtime" && snapshots.length > 0) {
-      setCurrentIndex(snapshots.length - 1);
-    }
-  }, [mode, snapshots.length]);
-
   // Playback controls
   const handlePlayPause = () => {
     setIsPlaying((prev) => !prev);
@@ -233,7 +227,10 @@ const App = () => {
     return snapshots.length * (1000 / speedMultiplier);
   };
 
-  const currentSnapshot = snapshots[currentIndex] || null;
+  // In real-time mode, always show the newest snapshot
+  const displayIndex =
+    mode === "realtime" ? Math.max(0, snapshots.length - 1) : currentIndex;
+  const currentSnapshot = snapshots[displayIndex] || null;
 
   // Handle file upload
   const handleFileUpload = (
@@ -413,23 +410,6 @@ const App = () => {
   // Theme toggle handler
   const toggleTheme = () =>
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
-
-  // Theme toggle switch (A11y, Dribbble-inspired, text only, with side labels)
-  const themeToggleSwitch = (
-    <div className="theme-toggle-bar">
-      <span className="theme-label-left">DARK</span>
-      <label className="theme-switch" title="Toggle light/dark mode">
-        <input
-          type="checkbox"
-          checked={theme === "dark"}
-          onChange={toggleTheme}
-          aria-label="Toggle dark mode"
-        />
-        <span className="slider" />
-      </label>
-      <span className="theme-label-right">LIGHT</span>
-    </div>
-  );
 
   // Format file size nicely
   const formatFileSize = (bytes: number): string => {
@@ -638,7 +618,7 @@ const App = () => {
               type="range"
               min="0"
               max={Math.max(0, snapshots.length - 1)}
-              value={currentIndex}
+              value={displayIndex}
               onChange={handleSliderChange}
               disabled={snapshots.length <= 1 || mode === "realtime"}
               className="timeline-slider"
@@ -819,7 +799,7 @@ const App = () => {
           <h1>Flowturi Studio</h1>
           <div className="app-header-controls">
             <ModeToggle currentMode={mode} onModeChange={handleModeChange} />
-            {themeToggleSwitch}
+            <ThemeToggle theme={theme} onToggle={toggleTheme} />
           </div>
         </div>
         <div className="main-content">

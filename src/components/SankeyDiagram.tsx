@@ -1160,18 +1160,6 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
     };
   }, []);
 
-  // Remove the debug test element
-  useEffect(() => {
-    if (!svgRef.current) return;
-
-    // Old debug test element code that created the "Drag me" text
-    // This has been removed
-
-    return () => {
-      // No need to clean up anything specific
-    };
-  }, [svgRef.current]);
-
   // Add useEffect to handle localStorage persistence
   useEffect(() => {
     // Save label overrides to localStorage
