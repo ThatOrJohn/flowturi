@@ -93,7 +93,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
   const [layoutStates, setLayoutStates] = useState<LayoutState[]>([]);
   const [currentLayoutState, setCurrentLayoutState] =
     useState<LayoutState | null>(null);
-  const [colorScale, setColorScale] =
+  const [, setColorScale] =
     useState<d3.ScaleOrdinal<string, string, never>>();
   const [error, setError] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -109,20 +109,6 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
     Map<NodeId, LabelOverride>
   >(new Map());
 
-  // Create a cache to maintain label positions across frames
-  const labelPositionCache = useRef(
-    new Map<
-      string,
-      {
-        x: number;
-        y: number;
-        anchor: string;
-        textX: number;
-        textY: number;
-      }
-    >()
-  ).current;
-
   // Add state for link label position overrides
   const [linkLabelOverrides, setLinkLabelOverrides] = useState<
     Map<string, { x: number; y: number }>
@@ -130,13 +116,6 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
 
   const width = dimensions.width;
   const height = dimensions.height;
-  const margin = { top: 5, right: 5, bottom: 5, left: 5 };
-
-  // Helper function to generate a position key for a node
-  const getPositionKey = (node: Node): string => {
-    return `node-${node.name}-${node.depthCategory || ""}`;
-  };
-
   const colorConfig: ColorConfig = {
     nodes: {
       source: "#4caf50",
@@ -262,57 +241,6 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
     return `node-${node.name}`;
   };
 
-  // Function to redraw leader line between node and its label
-  const updateLeaderLine = (
-    g: d3.Selection<Element, unknown, null, undefined>,
-    node: Node,
-    labelX: number,
-    labelY: number,
-    labelWidth: number,
-    labelHeight: number
-  ) => {
-    const width = (node.x1 || 0) - (node.x0 || 0);
-    const height = (node.y1 || 0) - (node.y0 || 0);
-    const nodeCenterX = (node.x0 ?? 0) + width / 2;
-    const nodeCenterY = (node.y0 ?? 0) + height / 2;
-    const labelCenterX = labelX + labelWidth / 2;
-    const labelCenterY = labelY + labelHeight / 2;
-
-    // Find the SVG parent element - use the ownerSVGElement property from the DOM node
-    const domNode = g.node() as SVGElement;
-    const svgElement = domNode?.ownerSVGElement;
-    if (!svgElement) return;
-
-    const svgParent = d3.select(svgElement);
-
-    // Remove any existing connectors for this node
-    svgParent.selectAll(`.label-connector[data-node="${node.name}"]`).remove();
-
-    // Distance threshold - only draw connector if the label is far from the node
-    const distanceThreshold = Math.min(width, height) * 0.2;
-    const distance = Math.sqrt(
-      Math.pow(nodeCenterX - labelCenterX, 2) +
-        Math.pow(nodeCenterY - labelCenterY, 2)
-    );
-
-    // Add connector line if the label is far from its node
-    if (distance > distanceThreshold) {
-      svgParent
-        .append("path")
-        .attr("class", "label-connector")
-        .attr("data-node", node.name)
-        .attr(
-          "d",
-          `M${nodeCenterX},${nodeCenterY} L${labelCenterX},${labelCenterY}`
-        )
-        .attr("stroke", "rgba(255, 255, 255, 0.4)")
-        .attr("stroke-width", 0.8)
-        .attr("stroke-dasharray", "2,2")
-        .attr("fill", "none")
-        .attr("pointer-events", "none");
-    }
-  };
-
   // Render the chart using the current layout state
   useEffect(() => {
     if (!svgRef.current || !currentLayoutState) return;
@@ -325,7 +253,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
       const baseGroup = svg.append("g");
       const linksGroup = baseGroup.append("g").attr("class", "links-layer");
       const nodesGroup = baseGroup.append("g").attr("class", "nodes-layer");
-      const linkLabelsGroup = baseGroup
+      baseGroup
         .append("g")
         .attr("class", "link-labels-layer");
       const nodeLabelsGroup = baseGroup
@@ -410,8 +338,8 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
       // Function to find a suitable position for a label when it overlaps
       const findNonOverlappingPosition = (
         box: BoundingBox,
-        centerX: number,
-        centerY: number,
+        _centerX: number,
+        _centerY: number,
         origX: number,
         origY: number,
         attempts: number = 8
@@ -593,7 +521,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
               // Create drag behavior for link labels
               const dragHandler = d3
                 .drag()
-                .on("start", function (event) {
+                .on("start", function () {
                   window.updateDebugStatus?.(`Drag started: link ${linkId}`);
                   d3.select(this).raise().classed("dragging", true);
                 })
@@ -636,7 +564,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
                     .attr("d", `M${midPoint.x},${midPoint.y} L${newX},${newY}`)
                     .attr("fill", "none");
                 })
-                .on("end", function (event) {
+                .on("end", function () {
                   window.updateDebugStatus?.(`Drag ended: link ${linkId}`);
 
                   // Get final position
@@ -659,7 +587,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
                 });
 
               // Apply drag behavior
-              // @ts-ignore
+              // @ts-expect-error d3 drag typing doesn't match the selection's element type
               d3.select(g.node()).call(dragHandler);
 
               // Adjust background size
@@ -953,6 +881,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
       nodeLabelGroups.each(function (d: any) {
         const node = d as Node;
         const nodeId = getNodeId(node);
+        // eslint-disable-next-line @typescript-eslint/no-this-alias -- needed inside nested d3 callbacks
         const element = this;
 
         console.log("Setting up drag for node:", node.name);
@@ -960,7 +889,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
         // Create drag behavior
         const dragHandler = d3
           .drag()
-          .on("start", function (event) {
+          .on("start", function () {
             console.log("Drag start:", node.name);
             window.updateDebugStatus?.(`Drag started: ${node.name}`);
             d3.select(this).raise().classed("dragging", true);
@@ -1028,7 +957,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
                 .attr("pointer-events", "none");
             }
           })
-          .on("end", function (event) {
+          .on("end", function () {
             console.log("Drag end:", node.name);
             window.updateDebugStatus?.(`Drag ended: ${node.name}`);
 
@@ -1099,7 +1028,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
           });
 
         // Apply drag behavior
-        // @ts-ignore
+        // @ts-expect-error d3 drag typing doesn't match the selection's element type
         d3.select(element).call(dragHandler);
 
         // Also add a click handler for debugging

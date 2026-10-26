@@ -1,4 +1,3 @@
-import * as d3 from "d3";
 import { LayoutState, FrameData } from "./computeLayout";
 
 // Sliding window for smoothing transitions
@@ -25,7 +24,7 @@ interface SmoothingCache {
  */
 export function computeRealtimeLayout(
   newFrame: FrameData,
-  previousState: LayoutState | null,
+  _previousState: LayoutState | null,
   smoothingCache: SmoothingCache | null = null,
   width = 800,
   height = 600,
@@ -208,7 +207,7 @@ export function computeRealtimeLayout(
   // ***************** STEP 3: SORT AND POSITION NODES VERTICALLY *****************
 
   // Sort nodes within each layer to maintain stability
-  nodesByLayer.forEach((nodes, layer) => {
+  nodesByLayer.forEach((nodes) => {
     // Sort by cached y-position to maintain order
     nodes.sort((a, b) => {
       const posA = cache.nodePositions.get(a);
@@ -252,7 +251,7 @@ export function computeRealtimeLayout(
     // Place nodes starting at the top margin plus vertical centering offset
     let y = margins.top + verticalOffset;
 
-    nodes.forEach((nodeName, index) => {
+    nodes.forEach((nodeName) => {
       const nodeInfo = cache.nodePositions.get(nodeName);
       if (!nodeInfo) return;
 
@@ -339,7 +338,7 @@ export function computeRealtimeLayout(
     const getConnectionPoint = (
       pos: any,
       isSource: boolean,
-      linkValue: number
+      _linkValue: number
     ) => {
       const nodeName = isSource ? link.source : link.target;
       const portsMap = isSource ? sourcePortsUsed : targetPortsUsed;

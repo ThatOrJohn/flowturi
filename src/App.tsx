@@ -66,9 +66,6 @@ const App = () => {
   const [fileInfo, setFileInfo] = useState<FileInfo | null>(null);
   const [mode, setMode] = useState<Mode>(getPreferredMode());
   const [latestFrame, setLatestFrame] = useState<FrameData | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<
-    "disconnected" | "connecting" | "connected" | "error"
-  >("disconnected");
   const speedMenuRef = useRef<HTMLDivElement>(null);
   const sankeyContainerRef = useRef<HTMLDivElement>(null);
 
@@ -156,8 +153,6 @@ const App = () => {
   const handleConnectionStatusChange = (
     status: "disconnected" | "connecting" | "connected" | "error"
   ) => {
-    setConnectionStatus(status);
-
     // Clear data when disconnected
     if (status === "disconnected" || status === "error") {
       // Only clear latest frame to stop rendering, but keep historical snapshots for reviewing

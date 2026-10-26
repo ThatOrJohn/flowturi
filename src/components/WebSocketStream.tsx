@@ -89,23 +89,6 @@ const WebSocketStream: React.FC<WebSocketStreamProps> = ({
     }
   }, [latestFrame]);
 
-  // Format bytes to human-readable format
-  const formatBytes = (bytes: number): string => {
-    if (bytes < 1024) return bytes + " B";
-    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
-    else return (bytes / 1048576).toFixed(1) + " MB";
-  };
-
-  // Get formatted timestamp
-  const getFormattedTimestamp = (timestamp: string) => {
-    try {
-      const date = new Date(timestamp);
-      return date.toLocaleTimeString();
-    } catch (e) {
-      return timestamp;
-    }
-  };
-
   // Get node counts by type
   const getNodeCounts = () => {
     if (!latestFrame)
@@ -145,18 +128,7 @@ const WebSocketStream: React.FC<WebSocketStreamProps> = ({
     };
   };
 
-  // Calculate and format total flow volume with appropriate units if needed
-  const getTotalFlow = () => {
-    if (!latestFrame || !latestFrame.links) return 0;
-    const totalValue = latestFrame.links.reduce(
-      (sum, link) => sum + link.value,
-      0
-    );
-    return Math.round(totalValue);
-  };
-
   const nodeCounts = getNodeCounts();
-  const totalFlow = getTotalFlow();
 
   // Stream Configuration Panel
   const streamConfigPanel = (

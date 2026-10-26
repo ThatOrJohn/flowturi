@@ -11,7 +11,7 @@ if (!rootElement) throw new Error("Failed to find the root element");
 const AppWithWebSocketProvider = () => {
   return (
     <PersistentWebSocketProvider
-      onStreamData={(data) => {
+      onStreamData={(_data) => {
         // The provider needs an onStreamData prop, but the actual handling will be done
         // by the WebSocketStream component that accesses the context
         console.log(
