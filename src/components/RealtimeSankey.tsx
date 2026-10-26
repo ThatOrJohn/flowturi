@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import { LayoutState, FrameData } from "../layout/computeLayout";
 import { computeRealtimeLayout } from "../layout/computeRealtimeLayout";
 import { addNodeDragBehavior } from "./NodeDragHandler";
+import { attachSankeyHover } from "./sankeyTooltip";
 import "./SankeyDiagram.css";
 
 interface RealtimeSankeyProps {
@@ -442,20 +443,23 @@ const RealtimeSankey: React.FC<RealtimeSankeyProps> = ({
             .attr("ry", 3);
         });
 
-      // Add hover titles to links
-      link
-        .append("title")
-        .text(
-          (d) =>
-            `${d.source?.name} → ${d.target?.name}: ${
-              d.value?.toFixed(1) || "N/A"
-            }`
-        );
-
-      // Add hover titles to nodes
-      node
-        .append("title")
-        .text((d) => `${d.name}\nLayer: ${d.layer}\nType: ${d.depthCategory}`);
+      // Tooltips and connected-link highlighting. Labels sit on top of their
+      // nodes, so they get the same hover behavior.
+      if (containerRef.current) {
+        attachSankeyHover({
+          container: containerRef.current,
+          links: currentLayoutState.linkPaths,
+          linkElements: link.select<SVGPathElement>("path").nodes(),
+          nodeNames: [
+            ...nodes.map((n) => n.name),
+            ...nodeLabelGroups.data().map((n) => n.name),
+          ],
+          nodeElements: [
+            ...node.select<SVGRectElement>("rect").nodes(),
+            ...nodeLabelGroups.nodes(),
+          ],
+        });
+      }
     } catch (err) {
       console.error("Error rendering Sankey diagram:", err);
       setError("Error rendering diagram");
