@@ -21,7 +21,7 @@
 
 - Hardware: Apple Silicon Mac Mini (M1, 16GB RAM).
 - OS: macOS Sequoia.
-- Tools: Cursor, Node.js v18, npm, Git.
+- Tools: Cursor, Node.js v22 (>= 20.19), npm, Git.
 - Constraints: 16GB RAM, prefer lightweight frameworks.
 
 ## 4. Roadmap Wish List
