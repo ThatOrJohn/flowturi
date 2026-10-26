@@ -42,15 +42,11 @@ Also see:
 2. Upload a JSON or CSV file with time-series Sankey data
 3. Use the playback controls to navigate through the data frames
 
-### Demo Mode
+### Sample Data
 
-Flowturi includes a demo mode that allows easy loading of sample data files:
+A few sample datasets are listed under **Sample Data**, below the file upload area in Historical mode. Click one to load it into the visualization.
 
-1. Enable demo mode by setting the `VITE_DEMO_MODE=true` environment variable
-2. Sample data files will appear below the file upload section
-3. Click any sample file to load it into the visualization
-
-See [Demo Mode Documentation](docs/demo-mode.md) for more details.
+See [Sample Data](docs/sample-data.md) for the list of datasets and how to add your own.
 
 ## Using Real-Time Mode
 
