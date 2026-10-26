@@ -14,16 +14,12 @@ import Footer from "./components/Footer";
 import "./App.css";
 import { resetNodePositions } from "./components/NodeDragHandler";
 
-// Environment variables
-const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === "true" || false;
-console.log("DEMO_MODE value:", DEMO_MODE);
-
 // Constants
 const MODE_KEY = "flowturi-preferred-mode";
 const THEME_KEY = "flowturi-preferred-theme";
 
-// Demo mode test files
-const TEST_DATA_FILES = [
+// Sample datasets served from public/test-data
+const SAMPLE_DATASETS = [
   {
     name: "cloud-compute-burst.json",
     path: "/test-data/cloud-compute-burst.json",
@@ -78,13 +74,6 @@ const App = () => {
     localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
 
-  // Update document title to show demo mode status
-  useEffect(() => {
-    document.title = DEMO_MODE
-      ? "Flowturi - Demo Mode Enabled"
-      : "Flowturi Studio";
-  }, []);
-
   // Save mode preference
   useEffect(() => {
     localStorage.setItem(MODE_KEY, mode);
@@ -108,16 +97,14 @@ const App = () => {
     const baseInterval = 1000; // 1 second base interval
     const interval = baseInterval / speedMultiplier; // Adjust interval by speed multiplier
 
-    const timer = setInterval(() => {
-      setCurrentIndex((prevIndex) => {
-        const nextIndex = (prevIndex + 1) % snapshots.length;
-        if (nextIndex === 0) setIsPlaying(false); // Stop at the end
-        return nextIndex;
-      });
+    const timer = setTimeout(() => {
+      const nextIndex = (currentIndex + 1) % snapshots.length;
+      setCurrentIndex(nextIndex);
+      if (nextIndex === 0) setIsPlaying(false); // Stop at the end
     }, interval);
 
-    return () => clearInterval(timer);
-  }, [isPlaying, snapshots, speedMultiplier]);
+    return () => clearTimeout(timer);
+  }, [isPlaying, currentIndex, snapshots.length, speedMultiplier]);
 
   // Close speed menu when clicking outside
   useEffect(() => {
@@ -186,12 +173,16 @@ const App = () => {
         const newSnapshots = [...prev, data].slice(-100);
         return newSnapshots;
       });
-
-      // Update to show the latest snapshot
-      setCurrentIndex(snapshots.length);
     },
-    [snapshots.length]
+    []
   );
+
+  // In real-time mode, keep the current index on the newest snapshot
+  useEffect(() => {
+    if (mode === "realtime" && snapshots.length > 0) {
+      setCurrentIndex(snapshots.length - 1);
+    }
+  }, [mode, snapshots.length]);
 
   // Playback controls
   const handlePlayPause = () => {
@@ -562,70 +553,35 @@ const App = () => {
     </div>
   );
 
-  // Load test data file from public directory
-  const loadTestDataFile = async (filePath: string) => {
+  // Load a sample dataset from the public directory. It goes through the same
+  // parsing and validation path as a user-uploaded file.
+  const loadSampleDataset = async (filePath: string) => {
     try {
       const response = await fetch(filePath);
       if (!response.ok) {
         throw new Error(`Failed to load file: ${response.statusText}`);
       }
 
-      const contentType = response.headers.get("content-type");
-      let fileContent;
-
-      if (contentType && contentType.includes("application/json")) {
-        fileContent = await response.json();
-        processJsonData(fileContent, filePath.split("/").pop() || "");
-      } else {
-        fileContent = await response.text();
-        const file = new File([fileContent], filePath.split("/").pop() || "", {
-          type: filePath.endsWith(".csv") ? "text/csv" : "application/json",
-        });
-        handleFileUpload(file);
-      }
-    } catch (error) {
-      setError(`Error loading test data: ${(error as Error).message}`);
-    }
-  };
-
-  // Process JSON data directly
-  const processJsonData = (jsonData: any, fileName: string) => {
-    try {
-      if (!Array.isArray(jsonData) || jsonData.length === 0) {
-        throw new Error("JSON must be an array of snapshots.");
-      }
-
-      // Set file info
-      setFileInfo({
-        name: fileName,
-        size: JSON.stringify(jsonData).length,
-        type: "application/json",
-        lastModified: new Date().toLocaleString(),
-        snapshots: jsonData.length,
-        nodes: jsonData[0]?.nodes.length || 0,
-        links: jsonData[0]?.links.length || 0,
+      const fileContent = await response.text();
+      const file = new File([fileContent], filePath.split("/").pop() || "", {
+        type: filePath.endsWith(".csv") ? "text/csv" : "application/json",
       });
-
-      setSnapshots(jsonData);
-      setCurrentIndex(0);
-      setIsPlaying(false);
-      setError(null);
-    } catch (err) {
-      setError(`Invalid file format: ${(err as Error).message}`);
-      setSnapshots([]);
+      handleFileUpload(file);
+    } catch (error) {
+      setError(`Error loading sample data: ${(error as Error).message}`);
     }
   };
 
-  // Demo mode test data component
-  const demoModeSection = (
+  // Sample datasets, always available in historical mode
+  const sampleDataSection = (
     <div className={`demo-mode-section ${theme}`}>
-      <h3>Demo Data</h3>
+      <h3>Sample Data</h3>
       <div className="demo-files-container">
-        {TEST_DATA_FILES.map((file) => (
+        {SAMPLE_DATASETS.map((file) => (
           <button
             key={file.name}
             className={`demo-file-button ${theme}`}
-            onClick={() => loadTestDataFile(file.path)}
+            onClick={() => loadSampleDataset(file.path)}
           >
             {file.name}
           </button>
@@ -837,7 +793,7 @@ const App = () => {
               >
                 JSON or CSV
               </a>{" "}
-              file to visualize.
+              file to visualize, or try one of the sample datasets below.
             </>
           ) : (
             <>
@@ -878,9 +834,7 @@ const App = () => {
                   {fileUploadInput}
                   {fileInfoPanel}
                 </div>
-                {DEMO_MODE && (
-                  <div className="demo-mode-container">{demoModeSection}</div>
-                )}
+                <div className="demo-mode-container">{sampleDataSection}</div>
               </>
             ) : (
               // Real-time mode controls
