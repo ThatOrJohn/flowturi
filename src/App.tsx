@@ -122,6 +122,55 @@ const App = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Keyboard shortcuts for playback (historical mode)
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setShowSpeedMenu(false);
+        return;
+      }
+      if (mode !== "historical" || snapshots.length <= 1) return;
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+      // Leave keys alone while typing or using the timeline slider
+      const target = event.target as HTMLElement;
+      if (target.closest("input, textarea, select, [contenteditable='true']")) {
+        return;
+      }
+      // Space on a focused button already activates it
+      if (event.key === " " && target.closest("button")) return;
+
+      const lastIndex = snapshots.length - 1;
+      switch (event.key) {
+        case " ":
+          setIsPlaying((prev) => !prev);
+          break;
+        case "ArrowLeft":
+          setIsPlaying(false);
+          setCurrentIndex((i) => Math.max(0, i - 1));
+          break;
+        case "ArrowRight":
+          setIsPlaying(false);
+          setCurrentIndex((i) => Math.min(lastIndex, i + 1));
+          break;
+        case "Home":
+          setIsPlaying(false);
+          setCurrentIndex(0);
+          break;
+        case "End":
+          setIsPlaying(false);
+          setCurrentIndex(lastIndex);
+          break;
+        default:
+          return;
+      }
+      event.preventDefault();
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [mode, snapshots.length]);
+
   // Handle mode change
   const handleModeChange = (newMode: Mode) => {
     // Stop playback when switching modes
@@ -277,6 +326,19 @@ const App = () => {
             }
             if (!Array.isArray(frame.nodes) || !Array.isArray(frame.links)) {
               throw new Error("'nodes' and 'links' must be arrays.");
+            }
+          }
+          // Accept 'id' as an alias for 'name', as real-time mode does
+          parsedData = parsedData.map((frame) => ({
+            ...frame,
+            nodes: frame.nodes.map((n) => ({
+              ...n,
+              name: n.name ?? (n as { id?: string }).id,
+            })),
+          }));
+          for (const frame of parsedData) {
+            if (frame.nodes.some((n) => !n.name)) {
+              throw new Error("Each node must have a 'name' (or 'id').");
             }
           }
         } else if (fileName.endsWith(".csv")) {
@@ -601,7 +663,9 @@ const App = () => {
             onClick={handlePlayPause}
             className="control-button"
             disabled={snapshots.length <= 1 || mode === "realtime"}
-            title={isPlaying ? "Pause" : "Play"}
+            title={isPlaying ? "Pause (Space)" : "Play (Space)"}
+            aria-label={isPlaying ? "Pause" : "Play"}
+            aria-keyshortcuts="Space"
           >
             {isPlaying ? (
               <svg className="icon" viewBox="0 0 24 24">
@@ -622,6 +686,8 @@ const App = () => {
               onChange={handleSliderChange}
               disabled={snapshots.length <= 1 || mode === "realtime"}
               className="timeline-slider"
+              aria-label="Timeline"
+              aria-valuetext={currentSnapshot?.timestamp}
             />
             <span className="timestamp">
               {currentSnapshot?.timestamp || "N/A"}
@@ -633,6 +699,9 @@ const App = () => {
               className="control-button"
               disabled={snapshots.length <= 1 || mode === "realtime"}
               title="Playback Speed"
+              aria-label={`Playback speed, ${speedMultiplier}x`}
+              aria-haspopup="true"
+              aria-expanded={showSpeedMenu}
             >
               <svg
                 className="icon"
@@ -724,6 +793,12 @@ const App = () => {
             )
           )}
         </div>
+        {mode === "historical" && snapshots.length > 1 && (
+          <p className="shortcut-hint">
+            <kbd>Space</kbd> play/pause · <kbd>←</kbd> <kbd>→</kbd> step ·{" "}
+            <kbd>Home</kbd> <kbd>End</kbd> jump
+          </p>
+        )}
       </div>
     );
 
@@ -731,7 +806,7 @@ const App = () => {
     const sankeyVisualization = (
       <div className="sankey-view-container">
         <div ref={sankeyContainerRef} className={`sankey-container ${theme}`}>
-          <ErrorBoundary>
+          <ErrorBoundary resetKey={`${mode}:${fileInfo?.name ?? ""}`}>
             {mode === "historical" && snapshots.length > 0 ? (
               <SankeyDiagram
                 snapshots={snapshots}
@@ -759,7 +834,19 @@ const App = () => {
     let mainContent;
 
     if (error) {
-      mainContent = <p className="error-message">{error}</p>;
+      mainContent = (
+        <div className="error-banner" role="alert">
+          <span>{error}</span>
+          <button
+            type="button"
+            className="error-banner-dismiss"
+            onClick={() => setError(null)}
+            aria-label="Dismiss error"
+          >
+            ×
+          </button>
+        </div>
+      );
     } else if (snapshots.length === 0) {
       mainContent = (
         <p className="no-data-message">

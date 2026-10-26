@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import { computeLayout, LayoutState, FrameData } from "../layout/computeLayout";
 import "./SankeyDiagram.css";
 import { addNodeDragBehavior } from "./NodeDragHandler";
+import { attachSankeyHover } from "./sankeyTooltip";
 
 // Define the type for label position overrides
 type LabelOverride = {
@@ -1038,6 +1039,24 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
           event.stopPropagation();
         });
       });
+
+      // Tooltips and connected-link highlighting. Labels sit on top of their
+      // nodes, so they get the same hover behavior.
+      if (containerRef.current) {
+        attachSankeyHover({
+          container: containerRef.current,
+          links: currentLayoutState.linkPaths,
+          linkElements: link.select<SVGPathElement>("path").nodes(),
+          nodeNames: [
+            ...nodes.map((n) => n.name),
+            ...nodeLabelGroups.data().map((n) => n.name),
+          ],
+          nodeElements: [
+            ...node.select<SVGRectElement>("rect").nodes(),
+            ...nodeLabelGroups.nodes(),
+          ],
+        });
+      }
 
       // Add a cleanup function to remove the debug group when component unmounts
       return () => {

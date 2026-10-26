@@ -15,7 +15,12 @@
 - **Tech Stack**:
   - Vite + React + TypeScript
 - **Features Implemented**:
-  - Basic Sankey diagram rendering (nodes and links).
+  - Historical mode: JSON/CSV upload, playback controls, keyboard shortcuts, built-in sample datasets.
+  - Real-time mode: WebSocket streaming with auto-reconnect.
+  - Hover tooltips and connected-link highlighting.
+  - Draggable nodes and labels.
+  - Light and dark themes.
+  - Export to WebM video and PNG frames.
 
 ## 3. Development Environment
 
@@ -32,7 +37,8 @@
 - [x] Flowturi Studio interface (file upload, display/format Sankey animation).
 - [x] Common video controls for historical mode (e.g., progress bar, playback speed).
 - [x] Improve layout stability.
-- [ ] Basic interactivity (tooltips, zoom).
+- [x] Basic interactivity: tooltips.
+- [ ] Zoom and pan.
 - [ ] Styling options for nodes and links.
 - [ ] Implement modular data connectors:
   - [ ] Static: CSV, JSON.

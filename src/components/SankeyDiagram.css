@@ -382,3 +382,66 @@ body.light .link-label-group .link-label-background {
   stroke-width: 2px;
   filter: drop-shadow(0px 3px 8px rgba(0, 0, 0, 0.8));
 }
+
+/* Hover tooltip (see sankeyTooltip.ts) */
+.sankey-tooltip {
+  position: absolute;
+  z-index: 10;
+  min-width: 140px;
+  max-width: 260px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.97);
+  color: #222;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font: 12px/1.4 Arial, sans-serif;
+  pointer-events: none;
+}
+
+.sankey-tooltip[hidden] {
+  display: none;
+}
+
+body.dark .sankey-tooltip {
+  background: rgba(32, 33, 36, 0.97);
+  color: #f0f0f0;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.sankey-tooltip-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  overflow-wrap: anywhere;
+}
+
+.sankey-tooltip dl {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 2px 12px;
+  margin: 0;
+}
+
+.sankey-tooltip dt {
+  opacity: 0.7;
+}
+
+.sankey-tooltip dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Connected-link highlighting while a node is hovered (see sankeyTooltip.ts).
+   !important is needed to beat the base `.link path` rule above. */
+.link.link-connected path {
+  stroke-opacity: 0.9 !important;
+}
+
+.link.link-dimmed path {
+  stroke-opacity: 0.12 !important;
+}
+
+.link.link-dimmed .link-label-group {
+  opacity: 0.3;
+}
