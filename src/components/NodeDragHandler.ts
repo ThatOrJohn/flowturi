@@ -95,14 +95,17 @@ export function addNodeDragBehavior(
  * @param newY New Y position
  */
 function updateConnectedElements(nodeName: string, newX: number, newY: number) {
+  // Node names are user data, so escape them before using them in selectors
+  const name = CSS.escape(nodeName);
+
   // Get the node dimensions
-  const nodeElement = d3.select(`.node[data-node-name="${nodeName}"]`);
+  const nodeElement = d3.select(`.node[data-node-name="${name}"]`);
   const rect = nodeElement.select("rect");
   const width = parseFloat(rect.attr("width") || "0");
   const height = parseFloat(rect.attr("height") || "0");
 
   // Update source links - these are links where this node is the source
-  d3.selectAll(`.link path[data-source="${nodeName}"]`).each(function () {
+  d3.selectAll(`.link path[data-source="${name}"]`).each(function () {
     const pathElement = d3.select(this);
     const pathData = pathElement.attr("d");
 
@@ -128,7 +131,7 @@ function updateConnectedElements(nodeName: string, newX: number, newY: number) {
   });
 
   // Update target links - these are links where this node is the target
-  d3.selectAll(`.link path[data-target="${nodeName}"]`).each(function () {
+  d3.selectAll(`.link path[data-target="${name}"]`).each(function () {
     const pathElement = d3.select(this);
     const pathData = pathElement.attr("d");
 
@@ -156,7 +159,7 @@ function updateConnectedElements(nodeName: string, newX: number, newY: number) {
   });
 
   // Update any node labels or connectors
-  d3.selectAll(`.label-connector[data-node="${nodeName}"]`).each(function () {
+  d3.selectAll(`.label-connector[data-node="${name}"]`).each(function () {
     const connectorElement = d3.select(this);
     // Calculate the node center
     const nodeCenterX = newX + width / 2;

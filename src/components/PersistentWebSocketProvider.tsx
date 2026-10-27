@@ -12,6 +12,7 @@ import { FrameData } from "../layout/computeLayout";
 const DEFAULT_WS_URL = "ws://localhost:8082";
 const HEARTBEAT_INTERVAL = 5000; // 5 seconds
 const CONNECTION_TIMEOUT = 5000; // 5 seconds
+const RECONNECT_DELAY = 3000; // 3 seconds
 
 interface WebSocketContextType {
   connect: (url: string) => void;
@@ -54,6 +55,7 @@ export const PersistentWebSocketProvider: React.FC<
   const wsRef = useRef<WebSocket | null>(null);
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const connectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const manualDisconnectRef = useRef<boolean>(false);
   // Latest connect function, so the reconnect timer never calls a stale closure
   const connectRef = useRef<(url: string) => void>(() => {});
@@ -68,6 +70,25 @@ export const PersistentWebSocketProvider: React.FC<
       clearInterval(heartbeatIntervalRef.current);
       heartbeatIntervalRef.current = null;
     }
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+  }, []);
+
+  // Report a dropped connection and retry after a delay
+  const scheduleReconnect = useCallback((url: string, message: string) => {
+    setIsConnected(false);
+    setConnectionStatus("error");
+    setError(message);
+
+    reconnectTimeoutRef.current = setTimeout(() => {
+      reconnectTimeoutRef.current = null;
+      if (!manualDisconnectRef.current) {
+        console.log("[PersistentWS] Attempting to reconnect...");
+        connectRef.current(url);
+      }
+    }, RECONNECT_DELAY);
   }, []);
 
   // Close WebSocket connection
@@ -156,9 +177,15 @@ export const PersistentWebSocketProvider: React.FC<
         connectTimeoutRef.current = setTimeout(() => {
           if (ws.readyState !== WebSocket.OPEN) {
             console.error("[PersistentWS] Connection timeout");
-            setConnectionStatus("error");
-            setError("Connection timeout");
-            disconnect();
+            // Abandon this socket quietly, keeping the error visible, and retry
+            ws.onopen = null;
+            ws.onclose = null;
+            ws.onerror = null;
+            ws.onmessage = null;
+            ws.close();
+            wsRef.current = null;
+            cleanupTimers();
+            scheduleReconnect(url, "Connection timeout");
           }
         }, CONNECTION_TIMEOUT);
 
@@ -224,20 +251,13 @@ export const PersistentWebSocketProvider: React.FC<
           );
 
           cleanupTimers();
-          setIsConnected(false);
+          wsRef.current = null;
 
           if (!manualDisconnectRef.current) {
-            setConnectionStatus("error");
-            setError(`Connection closed (${event.code})`);
-
             // Auto-reconnect after a delay if not manually disconnected
-            setTimeout(() => {
-              if (!manualDisconnectRef.current) {
-                console.log("[PersistentWS] Attempting to reconnect...");
-                connectRef.current(url);
-              }
-            }, 3000);
+            scheduleReconnect(url, `Connection closed (${event.code})`);
           } else {
+            setIsConnected(false);
             setConnectionStatus("disconnected");
           }
         };
@@ -247,7 +267,14 @@ export const PersistentWebSocketProvider: React.FC<
         setError("Invalid WebSocket URL");
       }
     },
-    [disconnect, startHeartbeat, sendHeartbeat, cleanupTimers, onStreamData]
+    [
+      disconnect,
+      startHeartbeat,
+      sendHeartbeat,
+      cleanupTimers,
+      scheduleReconnect,
+      onStreamData,
+    ]
   );
 
   useEffect(() => {

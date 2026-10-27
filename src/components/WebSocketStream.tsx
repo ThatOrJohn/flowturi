@@ -165,20 +165,20 @@ const WebSocketStream: React.FC<WebSocketStreamProps> = ({
         </div>
 
         <div className="stream-control-buttons">
-          {!isConnected ? (
+          {connectionStatus === "disconnected" ? (
             <button
               className={`connect-button ${theme}`}
               onClick={() => connect(wsUrl)}
-              disabled={connectionStatus === "connecting"}
             >
-              {connectionStatus === "connecting" ? `Connecting...` : "Connect"}
+              Connect
             </button>
           ) : (
+            // Also shown while connecting or retrying, so retries can be stopped
             <button
               className={`disconnect-button ${theme}`}
               onClick={disconnect}
             >
-              Disconnect
+              {isConnected ? "Disconnect" : "Cancel"}
             </button>
           )}
         </div>

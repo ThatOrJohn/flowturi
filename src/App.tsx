@@ -69,10 +69,10 @@ const App = () => {
   // Reference to the reset labels function
   const resetLabelsRef = useRef<(() => void) | null>(null);
 
-  // Apply theme to <body> for full-page theming
+  // Apply theme to <body> for full-page theming. The theme is only saved when
+  // the user picks one, so until then it keeps following the OS setting.
   useEffect(() => {
     document.body.className = theme;
-    localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
 
   // Save mode preference
@@ -82,11 +82,12 @@ const App = () => {
 
   // Listen for OS-level theme changes if user hasn't overridden
   useEffect(() => {
-    const stored = localStorage.getItem(THEME_KEY);
-    if (stored === "light" || stored === "dark") return; // user override
     const mq = window.matchMedia("(prefers-color-scheme: light)");
-    const handler = (e: MediaQueryListEvent) =>
+    const handler = (e: MediaQueryListEvent) => {
+      const stored = localStorage.getItem(THEME_KEY);
+      if (stored === "light" || stored === "dark") return; // user override
       setTheme(e.matches ? "light" : "dark");
+    };
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
@@ -98,10 +99,11 @@ const App = () => {
     const baseInterval = 1000; // 1 second base interval
     const interval = baseInterval / speedMultiplier; // Adjust interval by speed multiplier
 
+    const lastIndex = snapshots.length - 1;
     const timer = setTimeout(() => {
-      const nextIndex = (currentIndex + 1) % snapshots.length;
+      const nextIndex = Math.min(currentIndex + 1, lastIndex);
       setCurrentIndex(nextIndex);
-      if (nextIndex === 0) setIsPlaying(false); // Stop at the end
+      if (nextIndex === lastIndex) setIsPlaying(false); // Stop on the last frame
     }, interval);
 
     return () => clearTimeout(timer);
@@ -121,6 +123,14 @@ const App = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Play/pause; playing from the last frame restarts from the beginning
+  const togglePlayback = useCallback(() => {
+    if (!isPlaying && currentIndex >= snapshots.length - 1) {
+      setCurrentIndex(0);
+    }
+    setIsPlaying(!isPlaying);
+  }, [isPlaying, currentIndex, snapshots.length]);
 
   // Keyboard shortcuts for playback (historical mode)
   useEffect(() => {
@@ -143,7 +153,7 @@ const App = () => {
       const lastIndex = snapshots.length - 1;
       switch (event.key) {
         case " ":
-          setIsPlaying((prev) => !prev);
+          togglePlayback();
           break;
         case "ArrowLeft":
           setIsPlaying(false);
@@ -169,7 +179,7 @@ const App = () => {
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [mode, snapshots.length]);
+  }, [mode, snapshots.length, togglePlayback]);
 
   // Handle mode change
   const handleModeChange = (newMode: Mode) => {
@@ -228,10 +238,6 @@ const App = () => {
   );
 
   // Playback controls
-  const handlePlayPause = () => {
-    setIsPlaying((prev) => !prev);
-  };
-
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCurrentIndex(Number(e.target.value));
     setIsPlaying(false);
@@ -470,8 +476,11 @@ const App = () => {
   });
 
   // Theme toggle handler
-  const toggleTheme = () =>
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    localStorage.setItem(THEME_KEY, next);
+    setTheme(next);
+  };
 
   // Format file size nicely
   const formatFileSize = (bytes: number): string => {
@@ -660,7 +669,7 @@ const App = () => {
       <div className="playback-controls">
         <div className="controls-bar">
           <button
-            onClick={handlePlayPause}
+            onClick={togglePlayback}
             className="control-button"
             disabled={snapshots.length <= 1 || mode === "realtime"}
             title={isPlaying ? "Pause (Space)" : "Play (Space)"}
@@ -809,6 +818,8 @@ const App = () => {
           <ErrorBoundary resetKey={`${mode}:${fileInfo?.name ?? ""}`}>
             {mode === "historical" && snapshots.length > 0 ? (
               <SankeyDiagram
+                key={fileInfo?.name}
+                datasetKey={fileInfo?.name}
                 snapshots={snapshots}
                 currentIndex={currentIndex}
                 resetLabelsRef={resetLabelsRef}
