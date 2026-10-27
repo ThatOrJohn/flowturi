@@ -72,7 +72,33 @@ interface SankeyDiagramProps {
   currentIndex?: number; // Current frame index
   resetLabelsRef?: React.MutableRefObject<(() => void) | null>; // Add ref for reset function
   onFramesUpdated?: (frames: FrameData[]) => void; // Add callback for frame updates
+  datasetKey?: string; // Identifies the dataset so label overrides are stored per dataset
 }
+
+const LABEL_OVERRIDES_KEY = "flowturi-label-overrides";
+
+const loadLabelOverrides = (storageKey: string) => {
+  const nodes = new Map<NodeId, LabelOverride>();
+  const links = new Map<string, { x: number; y: number }>();
+  try {
+    // Drop the old global entry, which applied one dataset's overrides to all
+    localStorage.removeItem(LABEL_OVERRIDES_KEY);
+
+    const storedData = localStorage.getItem(storageKey);
+    if (storedData) {
+      const parsed = JSON.parse(storedData);
+      if (Array.isArray(parsed.nodes)) {
+        for (const [key, value] of parsed.nodes) nodes.set(key, value);
+      }
+      if (Array.isArray(parsed.links)) {
+        for (const [key, value] of parsed.links) links.set(key, value);
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to load saved label overrides:", err);
+  }
+  return { nodes, links };
+};
 
 // Extend the Window interface to include our debug functions
 declare global {
@@ -88,6 +114,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
   currentIndex = 0,
   resetLabelsRef,
   onFramesUpdated,
+  datasetKey = "default",
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -105,15 +132,22 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
   const eventTextRef =
     useRef<d3.Selection<SVGTextElement, unknown, null, undefined>>(null);
 
+  // Label position overrides, restored from storage for this dataset. The
+  // parent keys this component by dataset, so this runs once per dataset.
+  const overridesStorageKey = `${LABEL_OVERRIDES_KEY}:${datasetKey}`;
+  const [storedOverrides] = useState(() =>
+    loadLabelOverrides(overridesStorageKey)
+  );
+
   // Add state for tracking label position overrides
   const [labelOverrides, setLabelOverrides] = useState<
     Map<NodeId, LabelOverride>
-  >(new Map());
+  >(storedOverrides.nodes);
 
   // Add state for link label position overrides
   const [linkLabelOverrides, setLinkLabelOverrides] = useState<
     Map<string, { x: number; y: number }>
-  >(new Map());
+  >(storedOverrides.links);
 
   const width = dimensions.width;
   const height = dimensions.height;
@@ -554,7 +588,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
 
                   // Remove all connector lines with this link ID to avoid duplicates
                   svgParent
-                    .selectAll(`.link-label-connector[data-link="${linkId}"]`)
+                    .selectAll(`.link-label-connector[data-link="${CSS.escape(linkId)}"]`)
                     .remove();
 
                   // Add leader line from midpoint to the dragged label
@@ -853,7 +887,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
                 if (svgElement) {
                   const svgParent = d3.select(svgElement);
                   svgParent
-                    .selectAll(`.label-connector[data-node="${node.name}"]`)
+                    .selectAll(`.label-connector[data-node="${CSS.escape(node.name)}"]`)
                     .remove();
 
                   // Draw the connector line from node center to label center
@@ -939,7 +973,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
 
             // Remove all connector lines with this node's name to avoid duplicates
             svgParent
-              .selectAll(`.label-connector[data-node="${node.name}"]`)
+              .selectAll(`.label-connector[data-node="${CSS.escape(node.name)}"]`)
               .remove();
 
             // Add leader line if distance is above threshold
@@ -1006,7 +1040,7 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
 
               // Remove all connector lines with this node's name
               svgParent
-                .selectAll(`.label-connector[data-node="${node.name}"]`)
+                .selectAll(`.label-connector[data-node="${CSS.escape(node.name)}"]`)
                 .remove();
 
               // Add connector line if needed
@@ -1179,63 +1213,24 @@ const SankeyDiagram: React.FC<SankeyDiagramProps> = ({
     };
   }, []);
 
-  // Add useEffect to handle localStorage persistence
-  useEffect(() => {
-    // Save label overrides to localStorage
-    if (labelOverrides.size > 0 || linkLabelOverrides.size > 0) {
-      try {
-        // Convert Map to array of entries for storage
-        const nodeOverridesArray = Array.from(labelOverrides.entries());
-        const linkOverridesArray = Array.from(linkLabelOverrides.entries());
-
-        localStorage.setItem(
-          "flowturi-label-overrides",
-          JSON.stringify({
-            nodes: nodeOverridesArray,
-            links: linkOverridesArray,
-          })
-        );
-      } catch (err) {
-        console.warn("Failed to save label overrides:", err);
-      }
-    }
-  }, [labelOverrides, linkLabelOverrides]);
-
-  // Add useEffect to load stored overrides
+  // Persist label overrides per dataset, clearing the entry once they're reset
   useEffect(() => {
     try {
-      const storedData = localStorage.getItem("flowturi-label-overrides");
-      if (storedData) {
-        const parsed = JSON.parse(storedData);
-
-        // Restore node label overrides
-        if (parsed.nodes && Array.isArray(parsed.nodes)) {
-          const restoredNodeOverrides = new Map<NodeId, LabelOverride>(
-            parsed.nodes.map(([key, value]: [string, LabelOverride]) => [
-              key,
-              value,
-            ])
-          );
-          setLabelOverrides(restoredNodeOverrides);
-        }
-
-        // Restore link label overrides
-        if (parsed.links && Array.isArray(parsed.links)) {
-          const restoredLinkOverrides = new Map<
-            string,
-            { x: number; y: number }
-          >(
-            parsed.links.map(
-              ([key, value]: [string, { x: number; y: number }]) => [key, value]
-            )
-          );
-          setLinkLabelOverrides(restoredLinkOverrides);
-        }
+      if (labelOverrides.size === 0 && linkLabelOverrides.size === 0) {
+        localStorage.removeItem(overridesStorageKey);
+        return;
       }
+      localStorage.setItem(
+        overridesStorageKey,
+        JSON.stringify({
+          nodes: Array.from(labelOverrides.entries()),
+          links: Array.from(linkLabelOverrides.entries()),
+        })
+      );
     } catch (err) {
-      console.warn("Failed to load saved label overrides:", err);
+      console.warn("Failed to save label overrides:", err);
     }
-  }, []);
+  }, [labelOverrides, linkLabelOverrides, overridesStorageKey]);
 
   if (error) {
     return <p className="sankey-error">Error: {error}</p>;
